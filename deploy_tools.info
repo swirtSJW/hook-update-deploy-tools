@@ -1,0 +1,9 @@
+name = "Deploy Tools"
+description = "Tools to help process automated deployment of modules, features, and menus."
+package = Deploy
+core = 7.x
+configure = admin/config/deploy_tools
+
+
+; Miscellaneous
+files[] = deploy_tools.inc

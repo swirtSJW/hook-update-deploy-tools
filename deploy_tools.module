@@ -1,0 +1,55 @@
+<?php
+/**
+ * Implements hook_help().
+ */
+function deploy_tools_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#deploy_tools':
+      $output = file_get_contents(drupal_get_path('module', 'deploy_tools') . '/README.md');
+      if (module_exists('markdown')) {
+        // Markdown can be used.
+        module_load_include('php', 'markdown', 'markdown');
+        $output = Markdown($output);
+      }
+      else {
+        // Markdown is not available.
+        $output = '<pre>' . $output . '</pre>';
+      }
+      return $output;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function deploy_tools_menu() {
+  $items['admin/config/deploy_tools'] = array(
+    'title' => 'Deploy Tools Settings',
+    'description' => 'Settings for the Deploy Tools module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('deploy_tools_admin'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * The callback function creates an admin form for a menu hook.
+ */
+function deploy_tools_admin() {
+  $form = array();
+
+  $form['deploy_tools_menu_feature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of menu Feature'),
+    '#default_value' => check_plain(variable_get('deploy_tools_menu_feature', '')),
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => t("This is the machine name for the Feature controlling the menus. example: my_menu_feature"),
+    '#required' => FALSE,
+  );
+
+  return system_settings_form($form);
+}
