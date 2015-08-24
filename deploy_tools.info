@@ -5,5 +5,3 @@ core = 7.x
 configure = admin/config/deploy_tools
 
 
-; Miscellaneous
-files[] = deploy_tools.inc

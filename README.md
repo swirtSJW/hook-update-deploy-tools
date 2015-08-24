@@ -51,13 +51,6 @@ This module contains several DeployTools::methods to help manage programatically
 ## To Enable a Module(s) in an .install
 ---------------------------------------
 
-* Add the following lines to the top of the .install file in your custom 
-  deployment module.
-
-````
-// This file has to be included because update does not bootstrap.
-module_load_include('inc', 'deploy_tools', 'deploy_tools');
-````
 
 * Any time you want to enable a module(s) add a hook_update_N() to the .install 
   of your custom deployment module.
@@ -73,20 +66,13 @@ function my_custom_deploy_update_7004() {
     'module_name1',
     'module_name2',
   );
-  $return = DeployTools::enableModules($modules);
-  return $return;
+  $message = DeployTools\Modules::enable($modules);
+  return $message;
 }
 ````
 
 ## Revert a Feature(s) in a Feature's own .install
 --------------------------------------------------
-
-* Add the following lines to the top of your Feature's .install file
-
-````
-// This file has to be included because update does not bootstrap.
-module_load_include('inc', 'deploy_tools', 'deploy_tools');
-````
 
 * Any time you want to revert a Feature(s) add a hook_update_N() to the .install 
   of that Feature.
@@ -99,8 +85,8 @@ function custom_basic_page_update_7002() {
   $features = array(
     'custom_basic_page',
   );
-  $return = DeployTools::revertFeatures($features);
-  return $return;
+  $message = DeployTools\Features::revert('$features');
+  return $message;
 }
 ````
 

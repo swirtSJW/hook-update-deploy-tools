@@ -1,69 +1,10 @@
 <?php
-/**
- * @file
- * Functions for safer deployment.
- */
-
+namespace DeployTools;
 
 /**
- * Collection of methods for use in .install files.
+ * Public method for reverting Features only if needed.
  */
-class DeployTools {
-  /**
-   * Check to see if the modules are actually enabled.
-   *
-   * @param array $modules
-   *   An array of module machine names to check for being enabled.
-   *
-   * @return string
-   *   Messsage indicating the modules are enabled
-   *
-   * @throws DrupalUpdateException
-   *   Calls the update a failure, preventing it from registering the update_N.
-   */
-  public static function checkModulesEnabled($modules = array()) {
-    $modules = (array) $modules;
-    $return = TRUE;
-    $enabled_modules = array();
-    $t = get_t();
-    // Check to see if each module is enabled.
-    foreach ($modules as $module) {
-      if (!module_exists($module)) {
-        // This module is not enabled, throw an exception.
-        throw new DrupalUpdateException($t('The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.',array('@module' => $module)));
-      }
-    }
-    $module_list = implode(', ', $modules);
-
-    return $t("The modules @enabled were enabled successfully.\n", array('@enabled' => $module_list));
-  }
-
-  /**
-   * Enables an array of modules and checks to make sure they were truly enabled.
-   *
-   * @param array $modules
-   *   An array of module machine names to check for being enabled.
-   *
-   * @return string
-   *   Messsage indicating the modules are enabled.
-   *
-   * @throws DrupalUpdateException
-   *   Calls the update a failure, preventing it from registering the update_N.
-   */
-  public static function enableModules($modules = array()) {
-    $modules = (array) $modules;
-    $enable_good = module_enable($modules);
-    if (!$enable_good) {
-      // Enable command failed.
-      $module_list = implode(', ', $modules);
-      $t = get_t();
-      throw new DrupalUpdateException($t('The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.',array('@modules' => $module_list)));
-    }
-    $success = self::checkModulesEnabled($modules);
-
-    return $success;
-  }
-
+class Features {
   /**
    * Safely reverts an array of Features and provides feedback.
    *
@@ -77,10 +18,10 @@ class DeployTools {
    * @return string
    *   Messsage indicating progress of feature reversions.
    *
-   * @throws DrupalUpdateException
+   * @throws \DrupalUpdateException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function revertFeatures($features) {
+  public static function revert($features) {
     $features = (array) $features;
     $t = get_t();
     // See if the feature needs to be reverted.
@@ -112,7 +53,7 @@ class DeployTools {
         // Feature does not exist.  Throw exception.
         $message = "UPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust the hook_update accordingly and re-run update.";
         watchdog('deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_ERROR);
-        throw new DrupalUpdateException($t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name)));
+        throw new \DrupalUpdateException($t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name)));
       }
     }
     return $t("The requested reverts were processed successfully.\n", array());
@@ -163,7 +104,7 @@ class DeployTools {
    * @return int
    *   The number of Feature components not in default.
    */
-  public static function uncachedFeaturesGetStorage($feature_name) {
+  private static function uncachedFeaturesGetStorage($feature_name) {
     // Get component states, and array_diff against array(FEATURES_DEFAULT).
     // If the returned array has any states that don't match FEATURES_DEFAULT,
     // return the highest state.
@@ -183,7 +124,7 @@ class DeployTools {
    * @param array $states
    *  The $states array by ref (as created by features_get_component_states).
    */
-  public static function fixLaggingFieldGroup(&$states) {
+  private static function fixLaggingFieldGroup(&$states) {
     if (is_array($states)) {
 
       // Count the number of components out of default.
