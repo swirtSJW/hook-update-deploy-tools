@@ -85,7 +85,34 @@ function custom_basic_page_update_7002() {
   $features = array(
     'custom_basic_page',
   );
-  $message = DeployTools\Features::revert('$features');
+  $message = DeployTools\Features::revert($features);
+  return $message;
+}
+````
+
+In the odd situation where you need one feature to revert other features in
+some particular order, you can add them to the $features array in order.
+
+In the even more odd situation where you need to do some operation inbetween
+reverting one feature an another, you can use this example to concat the 
+messages in to one.
+
+````
+/**
+ * Add some fields to content type Page
+ */
+function custom_basic_page_update_7002() {
+  $features = array(
+    'custom_fields',
+    'custom_views',
+  );
+  $message = DeployTools\Features::revert($features);
+  // Do some other process like clear cache or set some settings.
+   $features = array(
+    'custom_basic_page',
+  );
+  $message .= DeployTools\Features::revert($features);
+
   return $message;
 }
 ````
