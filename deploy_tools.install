@@ -1,0 +1,36 @@
+<?php
+
+/**
+ * @file
+ * Installation file for Deploy Tools module.
+ */
+
+
+/**
+ * Implements hook_enable().
+ */
+function deploy_tools_enable() {
+  // Provide friendly message to get started with permissions and configuration.
+  drupal_set_message(t('The deploy_tools module has been successfully enabled.  Be sure to set <a href="@configure">configuration</a> options.', array(
+      '@configure' => url('admin/config/deploy_tools'),
+          )
+  ));
+}
+
+
+/**
+ * Implements hook_disable().
+ */
+function deploy_tools_disable() {
+  drupal_set_message(t('deploy_tools has been disabled.  If your local deploys or Features are using any of the methods or functions from deploy_tools, they may result in fatal errors.'));
+}
+
+
+/**
+ * Implements hook_uninstall().
+ */
+function deploy_tools_uninstall() {
+  variable_del('deploy_tools_menu_feature');
+
+  drupal_set_message(t('deploy_tools has been uninstalled.'));
+}
