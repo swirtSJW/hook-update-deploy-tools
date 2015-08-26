@@ -31,7 +31,8 @@ class Modules {
     }
     $module_list = implode(', ', $modules);
 
-    return $t("The modules @enabled were enabled successfully.\n", array('@enabled' => $module_list));
+    $message = $t("The modules @enabled were enabled successfully.\n", array('@enabled' => $module_list));
+    return $message;
   }
 
   /**

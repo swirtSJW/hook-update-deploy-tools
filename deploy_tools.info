@@ -3,5 +3,4 @@ description = "Tools to help process automated deployment of modules, features, 
 package = Deploy
 core = 7.x
 configure = admin/config/deploy_tools
-
-
+php = 5.3

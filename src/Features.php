@@ -56,7 +56,8 @@ class Features {
         throw new \DrupalUpdateException($t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name)));
       }
     }
-    return $t("The requested reverts were processed successfully.\n", array());
+    $message = $t("The requested reverts were processed successfully.\n", array());
+    return $message;
   }
 
   /**
