@@ -72,7 +72,8 @@ class Menus {
       }
       menu_cache_clear($menu_machine_name);
     }
-    return $t('Menu imports complete');
+    $done = $t('Menu imports complete');
+    return $done;
   }
 }
 
