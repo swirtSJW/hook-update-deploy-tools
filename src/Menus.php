@@ -12,13 +12,13 @@ class Menus {
    * an array of menus to be imported.
    */
   public static function import($menus) {
-    $menus = array($menus);
-    cache_clear_all();
+    $menus = (array) $menus;
     foreach ($menus as $mid => $this_menu) {
       $menu_machine_name = 'menu-' . $this_menu;
+      // TO DO: make dynamic V V
       $menu_uri = 'sites/all/modules/features/fcc_menu/menu_source/menu-' .
         $this_menu . '-export.txt';
-      $exists = db_query(
+      /*$exists = db_query(
         "SELECT title FROM {menu_custom} WHERE menu_name=:menu_name",
         array(':menu_name' => $menu['menu_name']))->fetchField();
       if (!$exists) {
@@ -27,12 +27,33 @@ class Menus {
         global $base_url;
         $link = $base_url . '/admin/structure/menu/manage/menu-' . $this_menu;
         watchdog('deploy_tools', $message, array('@menu_machine_name' => $menu_machine_name), WATCHDOG_WARNING, $link);
-      }
-      menu_import_file($menu_uri, $menu_machine_name,
-        array('link_to_content')
+      }*/
+      //Removal deleted_nodes
+      $reults = menu_import_file($menu_uri, $menu_machine_name,
+        array('link_to_content' => TRUE, 'remove_menu_items' => TRUE)
       );
+      $message = '@deleted_nodes links deleted.';
+      global $base_url;
+      $link = $base_url . '/admin/structure/menu/manage/menu-' . $this_menu;
+      watchdog('deploy_tools', $message, array('@deleted_nodes' =>
+       $deleted_nodes), WATCHDOG_WARNING, $link);
 
+      // Display creation message including matched_nodes + unknown_links +
+      // external_links = sum total
+      $total = $matched_nodes + unknown_links + external_links;
+      $message = '@total menu items created consisting of:\n@matched_nodes links
+       with matching paths\n@unknown_links links without matching paths\n
+       @external_links external links';
+      watchdog('deploy_tools', $message, array('@total' => $total,
+        '@matched_nodes' => $matched_nodes, '@unknown_links' => $unknown_links),
+         WATCHDOG_WARNING, $link);
 
+      // Display any errors
+      if (!empty($results['error']) {
+        $error = print_r($results['error'], TRUE);
+        $message = 'Erros creating menu: @error';
+        watchdog('deploy_tools', $message, array('@error' => $error), WATCHDOG_ERROR, $link);
+      }
       /*$result = menu_import_file($file, $menu_name, $options);
 
       if (!empty($result['errors'])) {
