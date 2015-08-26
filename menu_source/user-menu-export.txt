@@ -1,1 +1,0 @@
-User account {"url":"user","options":{"alter":true},"weight":"-10"}-Create new account {"url":"user\/register","hidden":true,"weight":"0"}-Log in {"url":"user\/login","hidden":true,"weight":"0"}-Request new password {"url":"user\/password","hidden":true,"weight":"0"}Log out {"url":"user\/logout","weight":"10"}
