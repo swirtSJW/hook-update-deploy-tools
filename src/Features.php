@@ -29,6 +29,7 @@ class Features {
    */
   public static function revert($features) {
     $features = (array) $features;
+    self::canUseFeatures();
     $t = get_t();
     // See if the feature needs to be reverted.
     foreach ($features as $key => $feature_name) {
@@ -67,11 +68,33 @@ class Features {
   }
 
   /**
+   * Checks to see if Features in enabled.
+   *
+   * @throws \DrupalUpdateException
+   *   Exception thrown if Features is not enabled.
+   *
+   * @return bool
+   *   TRUE if enabled.
+   */
+  private static function canUseFeatures() {
+    if (!module_exists('features')) {
+      $t = get_t();
+      // Features is not enabled on this site, so this this class is unuseable.
+      $message = 'Revert request denied because Features is not enabled on this site.';
+      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
+      throw new \DrupalUpdateException($t("\nUPDATE FAILED: Revert request denied because Features is not enabled on this site.", array()));
+    }
+    else {
+      return TRUE;
+    }
+  }
+
+  /**
    * Checks to see if a feature is overridden.
    *
    * @param string $feature_name
    *   The machine name of the feature to check the status of.
-   * 
+   *
    * @return bool
    *   - TRUE if overridden.
    *   - FALSE if not overidden.
