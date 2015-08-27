@@ -32,7 +32,8 @@ class Modules {
     foreach ($modules as $module) {
       if (!module_exists($module)) {
         // This module is not enabled, throw an exception.
-        throw new \DrupalUpdateException($t('The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.',array('@module' => $module)));
+        $message = $t('The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.', array('@module' => $module));
+        throw new \DrupalUpdateException($message);
       }
     }
     $module_list = implode(', ', $modules);
@@ -60,7 +61,8 @@ class Modules {
       // Enable command failed.
       $module_list = implode(', ', $modules);
       $t = get_t();
-      throw new \DrupalUpdateException($t('The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.',array('@modules' => $module_list)));
+      $message = $t('The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.', array('@modules' => $module_list));
+      throw new \DrupalUpdateException($message);
     }
     $success = self::checkEnabled($modules);
 

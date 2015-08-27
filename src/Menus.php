@@ -101,7 +101,8 @@ class Menus {
       // menu_import is not enabled on this site, so this this is unuseable.
       $message = 'Menu import denied because menu_import is not enabled on this site.';
       watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
-      throw new \DrupalUpdateException($t("\nUPDATE FAILED: Menu import denied because menu_import is not enabled on this site.", array()));
+      $message = $t("\nUPDATE FAILED: Menu import denied because menu_import is not enabled on this site.", array());
+      throw new \DrupalUpdateException($message);
     }
     else {
       return TRUE;

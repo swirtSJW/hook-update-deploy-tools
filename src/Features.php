@@ -60,7 +60,8 @@ class Features {
         // Feature does not exist.  Throw exception.
         $message = "UPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust the hook_update accordingly and re-run update.";
         watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_ERROR);
-        throw new \DrupalUpdateException($t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name)));
+        $message = $t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name));
+        throw new \DrupalUpdateException($message);
       }
     }
     $message = $t("The requested reverts were processed successfully.\n", array());
