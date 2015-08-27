@@ -1,6 +1,6 @@
-name = "Deploy Tools"
+name = "Hook Update Deploy Tools"
 description = "Tools to help process automated deployment of modules, features, and menus."
 package = Deploy
 core = 7.x
-configure = admin/config/deploy_tools
+configure = admin/config/hook_update_deploy_tools
 php = 5.3

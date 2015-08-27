@@ -1,13 +1,19 @@
 <?php
+/**
+ * @file
+ * Hooks and other module requirements.
+ */
+
+// Use the class 4 autoloder to load classes as they are called.
 require_once 'vendor/autoload.php';
 
 /**
  * Implements hook_help().
  */
-function deploy_tools_help($path, $arg) {
+function hook_update_deploy_tools_help($path, $arg) {
   switch ($path) {
-    case 'admin/help#deploy_tools':
-      $output = file_get_contents(drupal_get_path('module', 'deploy_tools') . '/README.md');
+    case 'admin/help#hook_update_deploy_tools':
+      $output = file_get_contents(drupal_get_path('module', 'hook_update_deploy_tools') . '/README.md');
       if (module_exists('markdown')) {
         // Markdown can be used.
         module_load_include('php', 'markdown', 'markdown');
@@ -24,12 +30,12 @@ function deploy_tools_help($path, $arg) {
 /**
  * Implements hook_menu().
  */
-function deploy_tools_menu() {
-  $items['admin/config/deploy_tools'] = array(
-    'title' => 'Deploy Tools Settings',
-    'description' => 'Settings for the Deploy Tools module.',
+function hook_update_deploy_tools_menu() {
+  $items['admin/config/hook_update_deploy_tools'] = array(
+    'title' => 'Hook Update Deploy Tools Settings',
+    'description' => 'Settings for the Hook Update Deploy Tools module.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('deploy_tools_admin'),
+    'page arguments' => array('hook_update_deploy_tools_admin'),
     'access arguments' => array('administer site configuration'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -40,13 +46,13 @@ function deploy_tools_menu() {
 /**
  * The callback function creates an admin form for a menu hook.
  */
-function deploy_tools_admin() {
+function hook_update_deploy_tools_admin() {
   $form = array();
 
-  $form['deploy_tools_menu_feature'] = array(
+  $form['hook_update_deploy_tools_menu_feature'] = array(
     '#type' => 'textfield',
     '#title' => t('Machine name of menu Feature'),
-    '#default_value' => check_plain(variable_get('deploy_tools_menu_feature', '')),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_menu_feature', '')),
     '#size' => 60,
     '#maxlength' => 60,
     '#description' => t("This is the machine name for the Feature controlling the menus. example: my_menu_feature"),

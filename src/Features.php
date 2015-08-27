@@ -1,5 +1,11 @@
 <?php
-namespace DeployTools;
+
+/**
+ * @file
+ * File to declare Features class.
+ */
+
+namespace HookUpdateDeployTools;
 
 /**
  * Public method for reverting Features only if needed.
@@ -30,29 +36,29 @@ class Features {
         // Check the status of each feature.
         if (self::isOverridden($feature_name)) {
           // It is overridden.  Attempt revert.
-          watchdog('deploy_tools', 'Reverting: @feature_name.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+          watchdog('hook_update_deploy_tools', 'Reverting: @feature_name.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
           features_revert_module($feature_name);
           // Now check to see if it actually reverted.
           if (self::isOverridden($feature_name)) {
             $message = '! Feature @feature_name remains overridden after being reverted.  Check for issues.';
             global $base_url;
             $link = $base_url . '/admin/structure/features';
-            watchdog('deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING, $link);
+            watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING, $link);
           }
           else {
-            watchdog('deploy_tools', 'Reverted @feature_name successfully.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+            watchdog('hook_update_deploy_tools', 'Reverted @feature_name successfully.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
           }
         }
         else {
           // Not overridden, no revert required.
           $message = 'Revert request for @feature_name was skipped because it is not currently overridden.';
-          watchdog('deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+          watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING);
         }
       }
       else {
         // Feature does not exist.  Throw exception.
         $message = "UPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust the hook_update accordingly and re-run update.";
-        watchdog('deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_ERROR);
+        watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_ERROR);
         throw new \DrupalUpdateException($t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name)));
       }
     }
@@ -65,7 +71,8 @@ class Features {
    *
    * @param string $feature_name
    *   The machine name of the feature to check the status of.
-   * @return boolean
+   * 
+   * @return bool
    *   - TRUE if overridden.
    *   - FALSE if not overidden.
    *   - NULL if not enabled / not found.
@@ -74,7 +81,7 @@ class Features {
     if (module_exists($feature_name)) {
       // Get file not included during update.
       module_load_include('inc', 'features', 'features.export');
-      //Refresh the Feature list so not cached.
+      // Refresh the Feature list so not cached.
       // Rebuild the list of features includes.
       features_include(TRUE);
       // Need to include any new files.
@@ -86,7 +93,7 @@ class Features {
         return FALSE;
       }
       else {
-        //  Overridden.
+        // Overridden.
         return TRUE;
       }
     }
@@ -123,7 +130,7 @@ class Features {
    * only component that is showing as reverted.
    *
    * @param array $states
-   *  The $states array by ref (as created by features_get_component_states).
+   *   The $states array by ref (as created by features_get_component_states).
    */
   private static function fixLaggingFieldGroup(&$states) {
     if (is_array($states)) {

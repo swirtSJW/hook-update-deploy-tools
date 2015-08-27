@@ -1,5 +1,11 @@
 <?php
-namespace DeployTools;
+
+/**
+ * @file
+ * File to declare Modules class.
+ */
+
+namespace HookUpdateDeployTools;
 
 /**
  * Public method for enabling modules that verifies it was actually enabled.
@@ -36,7 +42,7 @@ class Modules {
   }
 
   /**
-   * Enables an array of modules and checks to make sure they were truly enabled.
+   * Enables an array of modules and checks to make sure they were enabled.
    *
    * @param array $modules
    *   An array of module machine names to check for being enabled.
@@ -60,6 +66,4 @@ class Modules {
 
     return $success;
   }
-
 }
-

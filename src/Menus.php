@@ -1,5 +1,11 @@
 <?php
-namespace DeployTools;
+
+/**
+ * @file
+ * File to declare Menus class.
+ */
+
+namespace HookUpdateDeployTools;
 
 /**
  * Public method for importing menus.
@@ -14,13 +20,13 @@ class Menus {
   public static function import($menus) {
     $menus = (array) $menus;
     $t = get_t();
-    $menu_feature = check_plain(variable_get('deploy_tools_menu_feature', ''));
+    $menu_feature = check_plain(variable_get('hook_update_deploy_tools_menu_feature', ''));
     $menu_feature_uri = drupal_get_path('module', $menu_feature);
     foreach ($menus as $mid => $menu_machine_name) {
       $menu_uri = "{$menu_feature_uri}/menu_source/{$menu_machine_name}-export.txt";
 
       if (file_exists($menu_uri)) {
-        // Import the menu with 'remove menu items' and 'link to content' options.
+        // Import the menu w/ 'remove menu items' and 'link to content' options.
         $results = menu_import_file($menu_uri, $menu_machine_name,
           array('link_to_content' => TRUE, 'remove_menu_items' => TRUE)
         );
@@ -33,7 +39,7 @@ class Menus {
           '@deleted_menu_items' => $results['deleted_menu_items'],
           '@menu_machine_name' => $menu_machine_name,
         );
-        watchdog('deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
+        watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
 
         // Display creation message including matched_nodes + unknown_links +
         // external_links = sum total.
@@ -49,7 +55,7 @@ class Menus {
           '@external_links' => $results['external_links'],
           '@menu_machine_name' => $menu_machine_name,
         );
-        watchdog('deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
+        watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
 
         // Display any errors.
         if (!empty($results['error'])) {
@@ -58,17 +64,18 @@ class Menus {
           $vars = array(
             '@error' => $error,
             '@menu_machine_name' => $menu_machine_name,
-           );
-          watchdog('deploy_tools', $message, $vars, WATCHDOG_ERROR, $link);
+          );
+          watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_ERROR, $link);
           throw new \DrupalUpdateException($t("\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed with the following errors @error. Adjust your @menu_machine_name-export.txt menu text file accordingly and re-run update.", $vars));
         }
-      } else {
+      }
+      else {
         $vars = array(
           '@error' => $error,
           '@menu_machine_name' => $menu_machine_name,
           '@menu_uri' => $menu_uri,
-         );
-      throw new \DrupalUpdateException($t("\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed because the requested file '@menu_uri' was not found. Adjust your @menu_machine_name-export.txt menu text file accordingly and re-run update.", $vars));
+        );
+        throw new \DrupalUpdateException($t("\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed because the requested file '@menu_uri' was not found. Adjust your @menu_machine_name-export.txt menu text file accordingly and re-run update.", $vars));
       }
       menu_cache_clear($menu_machine_name);
     }
@@ -76,4 +83,3 @@ class Menus {
     return $done;
   }
 }
-

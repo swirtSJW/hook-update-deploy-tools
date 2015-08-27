@@ -1,6 +1,6 @@
 {
-    "name": "swirt/deploy_tools",
-    "description": "Deploy tools adds methods for managing site deployment through code.",
+    "name": "swirt/hook_update_deploy_tools",
+    "description": "Hook Update Deploy Tools adds methods for managing site deployment through code.",
     "authors": [
         {
             "name": "Steve Wirt",
@@ -12,7 +12,7 @@
     "require": {},
     "autoload": {
         "psr-4": {
-            "DeployTools\\": "src"
+            "HookUpdateDeployTools\\": "src"
         }
     }
 }

@@ -1,4 +1,4 @@
-Deploy Tools
+Hook Update Deploy Tools
 ============
 
 CONTENTS OF THIS FILE
@@ -17,7 +17,7 @@ CONTENTS OF THIS FILE
 ## Introduction
 ---------------
 
-This module contains several DeployTools::methods to help manage programatically: 
+This module contains several HookUpdateDeployTools::methods to help manage programatically: 
 
   * enabling of modules
   * reverting of Features
@@ -44,9 +44,9 @@ This module contains several DeployTools::methods to help manage programatically
 ## Configuration
 ----------------
 
-* Navigate to /admin/config/deploy_tools and enter the name of the Feature that
+* Navigate to /admin/config/hook_update_deploy_tools and enter the name of the Feature that
   is controlling the menu.  (optional:  This is only needed if you will using 
-  Deploy Tools to import your menus programatically.
+  Hook Update Deploy Tools to import your menus programatically.
 
 ## To Enable a Module(s) in an .install
 ---------------------------------------
@@ -66,7 +66,7 @@ function my_custom_deploy_update_7004() {
     'module_name1',
     'module_name2',
   );
-  $message = DeployTools\Modules::enable($modules);
+  $message = HookUpdateDeployTools\Modules::enable($modules);
   return $message;
 }
 ````
@@ -85,7 +85,7 @@ function custom_basic_page_update_7002() {
   $features = array(
     'custom_basic_page',
   );
-  $message = DeployTools\Features::revert($features);
+  $message = HookUpdateDeployTools\Features::revert($features);
   return $message;
 }
 ````
@@ -106,12 +106,12 @@ function custom_basic_page_update_7002() {
     'custom_fields',
     'custom_views',
   );
-  $message = DeployTools\Features::revert($features);
+  $message = HookUpdateDeployTools\Features::revert($features);
   // Do some other process like clear cache or set some settings.
    $features = array(
     'custom_basic_page',
   );
-  $message .= DeployTools\Features::revert($features);
+  $message .= HookUpdateDeployTools\Features::revert($features);
 
   return $message;
 }
