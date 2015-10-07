@@ -1,25 +1,24 @@
 Hook Update Deploy Tools
-========================
+============
 
-# CONTENTS OF THIS FILE
------------------------
-
+CONTENTS OF THIS FILE
+---------------------
  * Introduction
  * Features
  * Requirements
  * Installation
  * Configuration
  * Enabling modules
+ * Disabling and Uninstalling modules
  * Reverting Features
  * Importing Menus
  * Bonus Features
- * Maintainers 
+ * Maintainers
 
 ## Introduction
 ---------------
 
-This module contains several HookUpdateDeployTools::methods to help manage
-programatically:
+This module contains several HookUpdateDeployTools::methods to help manage programatically:
 
   * enabling of modules
   * reverting of Features
@@ -28,34 +27,6 @@ programatically:
 ## Features
 -----------
 
-When deploying site changes through code, it is efficient to use a local deploy
-module to handle enabling modules through hook_update_N() and to have Features
- revert themselves when necessary and have menus be exportable but not tied to
-a Feature.  This module contains a few tools to make this process more reliable.
-
-* Module Enable:
-Issue: When enabling a module with module_enable() in a
-hook_update_N() it is possible that the module will not enable due to a missing
-dependency or some other error, but it fails silently and the update hook is
-counted as a success.
-Solution: Calling HookUpdateDeployTools\Modules::enable() actually checks to
-verify that the module enable was a success, or throws an exception and fails
-the update, so it can be run again.
-* Feature Revert:
-Issue: Reverting a feature happens blindly and gives no feedback as to the
-status of the Feature after it was reverted.  Is it overridden, or was it
-a success.
-Solution: Calling HookUpdateDeployTools\Features::revert() causes the status
-of the Feature to be reported to terminal and watchdog, following the revert.
-Issue: Sometimes update hooks stack up if a lot of work has been done between
-releases and revert is called multiple times on the same Feature.
-Solution: Calling HookUpdateDeployTools\Features::revert() only reverts the
-Feature if it is overridden.
-* Menu Import:
-Issue: Handling menu changes by Feature is problematic for a number of reasons.
-Solution: Calling HookUpdateDeployTools\Menus::import('<menu-name>') imports a
-menu overwriting the existing menu and reports how many items were created and
-how.
 
 ## Requirements
 ---------------
@@ -74,9 +45,9 @@ how.
 ## Configuration
 ----------------
 
-* Navigate to /admin/config/hook_update_deploy_tools and enter the name of the
-  Feature that is controlling the menu.  (optional:  This is only needed if you
-  will be using Hook Update Deploy Tools to import your menus programatically.)
+* Navigate to /admin/config/hook_update_deploy_tools and enter the name of the Feature that
+  is controlling the menu.  (optional:  This is only needed if you will using
+  Hook Update Deploy Tools to import your menus programatically.
 
 ## To Enable a Module(s) in an .install
 ---------------------------------------
@@ -100,6 +71,64 @@ function my_custom_deploy_update_7004() {
   return $message;
 }
 ````
+
+## To Disable a Module(s) in an .install
+---------------------------------------
+
+````
+/**
+ * Disabling modules:
+ *  * module_name1
+ *  * module_name2
+ */
+function my_custom_deploy_update_7004() {
+  $modules = array(
+    'module_name1',
+    'module_name2',
+  );
+  $message = HookUpdateDeployTools\Modules::disable($modules);
+  return $message;
+}
+````
+
+## To Uninstall a Module(s) in an .install
+---------------------------------------
+
+````
+/**
+ * Disabling modules:
+ *  * module_name1
+ *  * module_name2
+ */
+function my_custom_deploy_update_7004() {
+  $modules = array(
+    'module_name1',
+    'module_name2',
+  );
+  $message = HookUpdateDeployTools\Modules::uninstall($modules);
+  return $message;
+}
+````
+
+## To Disable and Uninstall a Module(s) in an .install
+---------------------------------------
+
+````
+/**
+ * Disabling modules:
+ *  * module_name1
+ *  * module_name2
+ */
+function my_custom_deploy_update_7004() {
+  $modules = array(
+    'module_name1',
+    'module_name2',
+  );
+  $message = HookUpdateDeployTools\Modules::disableAndUninstall($modules);
+  return $message;
+}
+````
+
 
 ## Revert a Feature(s) in a Feature's own .install
 --------------------------------------------------
@@ -164,7 +193,6 @@ Tools aware of this custom menu Feature by going here
 /admin/config/hook_update_deploy_tools and entering the machine name of the menu
 Feature. Though for true deployment, this value should be assigned through an
 hook_update_N using
-
 ````
 variable_set('hook_update_deploy_tools_menu_feature', '<menu_feature_machine_name>');
 ````
@@ -179,7 +207,6 @@ return $message;
 
 ## BONUS
 --------
-
 The following modules are not required, but if you have them enabled they will
 improve the experience:
 
