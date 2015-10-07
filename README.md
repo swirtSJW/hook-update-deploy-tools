@@ -46,7 +46,7 @@ This module contains several HookUpdateDeployTools::methods to help manage progr
 ----------------
 
 * Navigate to /admin/config/hook_update_deploy_tools and enter the name of the Feature that
-  is controlling the menu.  (optional:  This is only needed if you will using
+  is controlling the menu.  (optional:  This is only needed if you will be using
   Hook Update Deploy Tools to import your menus programatically.
 
 ## To Enable a Module(s) in an .install
