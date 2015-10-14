@@ -12,6 +12,8 @@ CONTENTS OF THIS FILE
  * Disabling and Uninstalling modules
  * Reverting Features
  * Importing Menus
+ * Updating Node Values
+ * Updating Alias
  * Bonus Features
  * Maintainers
 
@@ -193,6 +195,7 @@ Tools aware of this custom menu Feature by going here
 /admin/config/hook_update_deploy_tools and entering the machine name of the menu
 Feature. Though for true deployment, this value should be assigned through an
 hook_update_N using
+
 ````
 variable_set('hook_update_deploy_tools_menu_feature', '<menu_feature_machine_name>');
 ````
@@ -204,6 +207,34 @@ Feature
 $message = HookUpdateDeployTools\Menus::import('menu-bureaus-and-offices');
 return $message;
 ````
+
+## To update the value of a simple node field from a deploy's .install
+-------------------------------------------
+Add this to a hook_update_N in your custom deploy module.install.
+
+````
+$message = HookUpdateDeployTools\Nodes::modifySimpleFieldValue($nid, $field, $value);
+return $message;
+````
+
+This will update simple fields (direct node properties) that have no cardinality
+or language like:
+comment, language, promote,  status, sticky, title, tnid, translate, uid
+
+
+## To update an alias from a deploy's .install
+-------------------------------------------
+Add this to a hook_update_N in your custom deploy module.install.
+
+````
+$message = HookUpdateDeployTools\Nodes::modifyAlias($old_alias, $new_alias, $language);
+return $message;
+````
+
+This will attempt to alter the alias if the old_alias exists.  The language has
+to match the language of the original alias being modified (usually matches the
+node that it is assigned to).
+
 
 ## BONUS
 --------
