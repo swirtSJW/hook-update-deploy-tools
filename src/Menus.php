@@ -40,7 +40,7 @@ class Menus {
           '@deleted_menu_items' => $results['deleted_menu_items'],
           '@menu_machine_name' => $menu_machine_name,
         );
-        watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
+        Message::make($message, $vars, WATCHDOG_INFO, 1, $link);
 
         // Display creation message including matched_nodes + unknown_links +
         // external_links = sum total.
@@ -56,29 +56,28 @@ class Menus {
           '@external_links' => $results['external_links'],
           '@menu_machine_name' => $menu_machine_name,
         );
-        watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_WARNING, $link);
+        Message::make($message, $vars, WATCHDOG_INFO, 1, $link);
 
         // Display any errors.
         if (!empty($results['error'])) {
           $error = print_r($results['error'], TRUE);
-          $message = '@menu_machine_name: Errors creating menu: @error';
-          $vars = array(
+          $variables = array(
             '@error' => $error,
             '@menu_machine_name' => $menu_machine_name,
           );
-          watchdog('hook_update_deploy_tools', $message, $vars, WATCHDOG_ERROR, $link);
-          throw new \DrupalUpdateException($t("\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed with the following errors @error. Adjust your @menu_machine_name-export.txt menu text file accordingly and re-run update.", $vars));
+          $message = "The requested menu import '@menu_machine_name' failed with the following errors @error. Adjust your @menu_machine_name-export.txt menu text file accordingly and re-run update.";
+          Message::make($message, $variables, WATCHDOG_ERROR, 1, $link);
         }
       }
       else {
-
-        $vars = array(
+        // Menu import file missing.
+        $variables = array(
           '@error' => $error,
           '@menu_machine_name' => $menu_machine_name,
           '@menu_uri' => $menu_uri,
         );
-        $message = $t("\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed because the requested file '@menu_uri' was not found. Re-run update when the file has been placed there.", $vars);
-        throw new \DrupalUpdateException($message);
+        $message = "\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed because the requested file '@menu_uri' was not found. Re-run update when the file has been placed there.";
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
       menu_cache_clear($menu_machine_name);
     }
@@ -100,9 +99,8 @@ class Menus {
       $t = get_t();
       // menu_import is not enabled on this site, so this this is unuseable.
       $message = 'Menu import denied because menu_import is not enabled on this site.';
-      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
-      $message = $t("\nUPDATE FAILED: Menu import denied because menu_import is not enabled on this site.", array());
-      throw new \DrupalUpdateException($message);
+      $variables = array();
+      Message::make($message, $variables, WATCHDOG_ERROR);
     }
     else {
       return TRUE;

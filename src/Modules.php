@@ -31,14 +31,16 @@ class Modules {
     foreach ($modules as $module) {
       if (module_exists($module)) {
         // This module is enabled, throw an exception.
-        $message = $t('The module @module was supposed to be disabled by this update, but was not. Please investigate the problem and re-run this update.', array('@module' => $module));
-        throw new \DrupalUpdateException($message);
+        $message = 'The module @module was supposed to be disabled by this update, but was not. Please investigate the problem and re-run this update.';
+        $variables = array('@module' => $module);
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
     }
     $module_list = implode(', ', $modules);
 
-    $message = $t("The modules @disabled are disabled.\n", array('@disabled' => $module_list));
-    return $message;
+    $message = "The modules @disabled are disabled.";
+    $variables = array('@disabled' => $module_list);
+    return Message::make($message, $variables, WATCHDOG_INFO);;
   }
 
   /**
@@ -61,14 +63,16 @@ class Modules {
     foreach ($modules as $module) {
       if (!module_exists($module)) {
         // This module is not enabled, throw an exception.
-        $message = $t('The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.', array('@module' => $module));
-        throw new \DrupalUpdateException($message);
+        $message = 'The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.';
+        $variables = array('@module' => $module);
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
     }
     $module_list = implode(', ', $modules);
 
-    $message = $t("The modules @enabled were enabled successfully.\n", array('@enabled' => $module_list));
-    return $message;
+    $message = "The modules @enabled were enabled successfully.";
+    $variables = array('@enabled' => $module_list);
+    return Message::make($message, $variables, WATCHDOG_INFO);;
   }
 
 
@@ -91,8 +95,9 @@ class Modules {
       // Enable command failed.
       $module_list = implode(', ', $modules);
       $t = get_t();
-      $message = $t('The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.', array('@modules' => $module_list));
-      throw new \DrupalUpdateException($message);
+      $message = 'The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.';
+      $variables = array('@modules' => $module_list);
+      Message::make($message, $variables, WATCHDOG_ERROR);
     }
     $success = self::checkEnabled($modules);
 
@@ -142,8 +147,8 @@ class Modules {
     foreach ($modules as $module) {
       if (module_exists($module)) {
         // The module is not disabled, so it can not be uninstalled.
-        $message = $t('The request to uninstall "@module" could not be completed, because @module is still enabled.', array('@module' => $module));
-        throw new \DrupalUpdateException($message);
+        $variables = array('@module' => $module);
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
     }
     // Made it this far.Safe to uninstall.
@@ -154,13 +159,15 @@ class Modules {
 
     $module_list = implode(', ', $modules);
     if ($success) {
-      $message = $t("The modules @uninstalled were uninstalled successfully.\n", array('@uninstalled' => $module_list));
-      return $message;
+      $message = "The modules @uninstalled were uninstalled successfully.";
+      $variables = array('@uninstalled' => $module_list);
+      return Message::make($message, $variables, WATCHDOG_INFO);;
     }
     else {
       // Uninstalling the modules failed, can not be more specifc about why.
-      $message = $t("The modules @uninstalled were NOT uninstalled successfully.  Check to see that the modules you are attempting to uninstall include any dependents in the correct order.\n", array('@uninstalled' => $module_list));
-      throw new \DrupalUpdateException($message);
+      $message = "The modules @uninstalled were NOT uninstalled successfully.  Check to see that the modules you are attempting to uninstall include any dependents in the correct order.";
+      $variables = array('@uninstalled' => $module_list);
+      Message::make($message, $variables, WATCHDOG_ERROR);
     }
   }
 

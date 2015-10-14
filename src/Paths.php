@@ -48,18 +48,22 @@ class Paths {
       // Was it successful?
       if (!empty($saved_alias)) {
         // It saved, set the success message.
-        $message = $t("'!pathalias' has been set as the new alias for what used to be '!oldalias'.\n", array('!pathalias' => $new_path['alias'], '!oldalias' => $original_alias));
+        $message = "'!pathalias' has been set as the new alias for what used to be '!oldalias'.";
+        $variables = array('!pathalias' => $new_path['alias'], '!oldalias' => $original_alias);
+        $message = Message::make($message, $variables, WATCHDOG_INFO);
       }
       else {
         // For some reason the save failed.  Reason unknown.
-        $message = $t("\nUPDATE FAILED: '!pathalias' save was not successful. Sorry, there is no hint of why.", array('!pathalias' => $new_path['alias']));
-        throw new \DrupalUpdateException($message);
+        $message = "Alias save of '!pathalias' was not successful. Sorry, there is no hint of why.";
+        $variables = array('!pathalias' => $new_path['alias']);
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
     }
     else {
       // The old alias does not exist.
-      $message = $t("\nUPDATE FAILED: '!pathalias' is not a current alias so could not be altered", array('!pathalias' => $original_alias));
-      throw new \DrupalUpdateException($message);
+      $message = "Alias '!pathalias' is not a current alias so could not be altered";
+      $variables = array('!pathalias' => $original_alias);
+      Message::make($message, $variables, WATCHDOG_ERROR);
     }
     // Return the message.
     return $message;
@@ -79,9 +83,8 @@ class Paths {
       $t = get_t();
       // menu_import is not enabled on this site, so this this is unuseable.
       $message = 'Path operation denied because pathauto is not enabled on this site.';
-      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
-      $message = $t("\nUPDATE FAILED: Path operation denied because pathauto is not enabled on this site.", array());
-      throw new \DrupalUpdateException($message);
+      $variables = array();
+      Message::make($message, $variables, WATCHDOG_ERROR);
     }
     else {
       return TRUE;

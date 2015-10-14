@@ -37,34 +37,39 @@ class Features {
         // Check the status of each feature.
         if (self::isOverridden($feature_name)) {
           // It is overridden.  Attempt revert.
-          watchdog('hook_update_deploy_tools', 'Reverting: @feature_name.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+          $message = "Reverting: @feature_name.";
+          $variables = array('@feature_name' => $feature_name);
+          Message::make($message, $variables, WATCHDOG_INFO);
           features_revert_module($feature_name);
           // Now check to see if it actually reverted.
           if (self::isOverridden($feature_name)) {
             $message = '! Feature @feature_name remains overridden after being reverted.  Check for issues.';
             global $base_url;
             $link = $base_url . '/admin/structure/features';
-            watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING, $link);
+            $variables = array('@feature_name' => $feature_name);
+            $message = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
           }
           else {
-            watchdog('hook_update_deploy_tools', 'Reverted @feature_name successfully.', array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+            $message = "Reverted @feature_name successfully.";
+            $variables = array('@feature_name' => $feature_name);
+            $message = Message::make($message, $variables, WATCHDOG_INFO);
           }
         }
         else {
           // Not overridden, no revert required.
-          $message = 'Revert request for @feature_name was skipped because it is not currently overridden.';
-          watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_WARNING);
+          $message = "Revert request for @feature_name was skipped because it is not currently overridden.";
+          $variables = array('@feature_name' => $feature_name);
+          $message = Message::make($message, $variables, WATCHDOG_INFO);
         }
       }
       else {
         // Feature does not exist.  Throw exception.
-        $message = "UPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust the hook_update accordingly and re-run update.";
-        watchdog('hook_update_deploy_tools', $message, array('@feature_name' => $feature_name), WATCHDOG_ERROR);
-        $message = $t("\nUPDATE FAILED: The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.", array('@feature_name' => $feature_name));
-        throw new \DrupalUpdateException($message);
+        $message = "The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.";
+        $variables = array('@feature_name' => $feature_name);
+        Message::make($message, $variables, WATCHDOG_ERROR);
       }
     }
-    $message = $t("The requested reverts were processed successfully.\n", array());
+    $message = Message::make('The requested reverts were processed successfully.', array(), WATCHDOG_INFO);
     return $message;
   }
 
@@ -81,9 +86,9 @@ class Features {
     if (!module_exists('features')) {
       $t = get_t();
       // Features is not enabled on this site, so this this class is unuseable.
-      $message = 'Revert request denied because Features is not enabled on this site.';
-      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
-      throw new \DrupalUpdateException($t("\nUPDATE FAILED: Revert request denied because Features is not enabled on this site.", array()));
+      $message = "Revert request denied because Features is not enabled on this site.";
+      $variables = array();
+      Message::make($message, array(), WATCHDOG_ERROR);
     }
     else {
       return TRUE;
