@@ -8,7 +8,7 @@
 namespace HookUpdateDeployTools;
 
 /**
- * Public method for changing simple fields in nodes programatically.
+ * Public method for changing nodes programatically.
  */
 class Nodes {
   /**
@@ -28,7 +28,7 @@ class Nodes {
    * @param int $nid
    *   The nid of the node.
    * @param string $field
-   *   The name of the simple field.
+   *   The machine name of the simple field.
    * @param string $value
    *   Value that you want to change to.
    *
@@ -53,34 +53,42 @@ class Nodes {
       'uid',
       'translate',
     );
-    // If the field above is a simple field.
+    // Is it a simple field?
     if (in_array($field, $simple_fields)) {
       $node = node_load($nid);
-      // If this is a node with that field.
-      if (!empty($node) && isset($node->$field)) {
-        // Set the field value.
-        $node->$field = $value;
-        // Save the node.
-        $node = node_save($node);
-        // Set the message.
-        $vars = array(
-          '!nid' => $node->nid,
-          '!fieldname' => $field,
-          '!value' => $value,
-        );
-        $message = $t("On Node !nid, the field value of '!fieldname' was changed to '!value'.\n", $vars);
-        // Return the message.
-        return $message;
+      // Is there a node?
+      if (!empty($node)) {
+        // Does the field exist on the node?
+        if (isset($node->$field)) {
+          // Set the field value.
+          $node->$field = $value;
+          // Save the node.
+          $node = node_save($node);
+          // Set the message.
+          $vars = array(
+            '!nid' => $node->nid,
+            '!fieldname' => $field,
+            '!value' => $value,
+          );
+          $message = $t("On Node !nid, the field value of '!fieldname' was changed to '!value'.\n", $vars);
+          // Return the message.
+          return $message;
+        }
+        else {
+          // The field does not exist.
+          $message = $t("\nUPDATE FAILED: The field '!fieldname' does not exist on the node !nid so it could not be alterred.", array('!fieldname' => $field, '!nid' => $nid));
+          throw new \DrupalUpdateException($message);
+        }
       }
-      // Else this is not a node with that field.
       else {
-        $message = $t("The field '!fieldname' does not exist or the node does not exist so it could not be alterred.", array('!fieldname' => $field));
+        // The node does not exist.
+        $message = $t("\nUPDATE FAILED: The node '!nid' does not exist.", array('!nid' => $nid));
         throw new \DrupalUpdateException($message);
       }
     }
-    // Else send error that this is not a simple field.
     else {
-      $message = $t("The field '!fieldname' is not a simple field, can not be changed by the method ::modifySimpleFieldValue.", array('!fieldname' => $field));
+      // The field is not a simple field so can not use this method.
+      $message = $t("\nUPDATE FAILED: The field '!fieldname' is not a simple field and can not be changed by the method ::modifySimpleFieldValue.", array('!fieldname' => $field));
       throw new \DrupalUpdateException($message);
     }
   }

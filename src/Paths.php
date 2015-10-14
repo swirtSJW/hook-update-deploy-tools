@@ -8,15 +8,15 @@
 namespace HookUpdateDeployTools;
 
 /**
- * Public method for changing the value of a node alias.
+ * Public methods for altering aliases.
  */
 class Paths {
   /**
-   * Change the value of the node alias.
+   * Change the value of an alias.
    *
-   * @param string $oldalias
+   * @param string $original_alias
    *   The old alias.
-   * @param string $newalias
+   * @param string $new_alias
    *   The new alias you are changing to.
    * @param string $language
    *   The language of the entity being modified.
@@ -27,46 +27,64 @@ class Paths {
    * @throws \DrupalUpdateException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function modifyAlias($oldalias, $newalias, $language) {
-    // We invoke the t() vis a vis $t = get_t();.
+  public static function modifyAlias($original_alias, $new_alias, $language) {
+    self::canUsePathauto();
+    // t() might not be available at install.
     $t = get_t();
-    // If path auto does not exist, then there are no aliases to change.
-    if (module_exists('pathauto')) {
-      // Just in case we invoke the pathauto.inc file.
-      module_load_include('inc', 'pathauto', 'pathauto');
-      // Using the old alias we get the source (the primary address of the
-      // content resource).
-      $source = drupal_lookup_path('source', $oldalias);
-      // We also start building the $path variable.
-      $path = _pathauto_existing_alias_data($source, $language);
-      // If the old alias actually exists.
-      if (is_array($path)) {
-        // Clean the new alias.
-        $clean_alias = pathauto_clean_alias($newalias);
-        // Make the $path array the $existing_alias.
-        $existing_alias = $path;
-        // Set the 'alias' element as the new cleaned alias.
-        $path['alias'] = $clean_alias;
-        // And now using the $existing_alias and the $path, set the
-        // new alias up.
-        _pathauto_set_alias($path, $existing_alias);
-        // Set the message.
-        $message = $t("'!pathalias' has been set as the new alias for what used to be '!oldalias'.\n", array('!pathalias' => $path['alias'], '!oldalias' => $oldalias));
+    // Bring in the pathauto.inc file.
+    module_load_include('inc', 'pathauto', 'pathauto');
+    // Use the old alias to get the source (drupal system path).
+    $source = drupal_lookup_path('source', $original_alias);
+    // Start building the $current_path variable.
+    $current_path = _pathauto_existing_alias_data($source, $language);
+    // Does the old alias exist?
+    if (is_array($current_path)) {
+      // Clone the current path array to make changes.
+      $new_path = $current_path;
+      // Clean the new alias and assign.
+      $new_path['alias'] = pathauto_clean_alias($new_alias);
+      // Make the changes.
+      $saved_alias = _pathauto_set_alias($new_path, $current_path);
+      // Was it successful?
+      if (!empty($saved_alias)) {
+        // It saved, set the success message.
+        $message = $t("'!pathalias' has been set as the new alias for what used to be '!oldalias'.\n", array('!pathalias' => $new_path['alias'], '!oldalias' => $original_alias));
       }
       else {
-        // If the old alias does not exist.
-        $message = $t("'!pathalias' is not a current alias.", array('!pathalias' => $oldalias));
+        // For some reason the save failed.  Reason unknown.
+        $message = $t("\nUPDATE FAILED: '!pathalias' save was not successful. Sorry, there is no hint of why.", array('!pathalias' => $new_path['alias']));
         throw new \DrupalUpdateException($message);
       }
-      // Return the message.
-      return $message;
     }
     else {
-      // If pathauto is not a module on the site.
-      $message = 'Change of alias denied because pathauto is not enabled on this site.';
-      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
-      $message = $t("\nUPDATE FAILED: Alias change denied because pathauto is not enabled on this site.", array());
+      // The old alias does not exist.
+      $message = $t("\nUPDATE FAILED: '!pathalias' is not a current alias so could not be altered", array('!pathalias' => $original_alias));
       throw new \DrupalUpdateException($message);
+    }
+    // Return the message.
+    return $message;
+  }
+
+  /**
+   * Checks to see if pathauto in enabled.
+   *
+   * @throws \DrupalUpdateException
+   *   Exception thrown if pathauto is not enabled.
+   *
+   * @return bool
+   *   TRUE if enabled.
+   */
+  private static function canUsePathauto() {
+    if (!module_exists('pathauto')) {
+      $t = get_t();
+      // menu_import is not enabled on this site, so this this is unuseable.
+      $message = 'Path operation denied because pathauto is not enabled on this site.';
+      watchdog('hook_update_deploy_tools', $message, array(), WATCHDOG_ERROR);
+      $message = $t("\nUPDATE FAILED: Path operation denied because pathauto is not enabled on this site.", array());
+      throw new \DrupalUpdateException($message);
+    }
+    else {
+      return TRUE;
     }
   }
 }
