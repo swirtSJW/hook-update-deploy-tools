@@ -60,8 +60,9 @@ class Message {
         $type = 'unknown';
       }
     }
-
-    $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? t('UPDATE FAILED:') . ' ' : '';
+    // t() might not be available at .install.
+    $t = get_t();
+    $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
     $formatted_message = format_string($message, $variables);
 
     if ($severity !== FALSE) {
@@ -76,7 +77,7 @@ class Message {
     }
     else {
       // Being run by update.php so translate and return.
-      $return_message = t($message, $variables) . " \n";
+      $return_message = $t($message, $variables) . " \n";
     }
     // Error or more serious? Fail the hook_update_N.
     if (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) {
