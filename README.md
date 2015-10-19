@@ -22,12 +22,24 @@ CONTENTS OF THIS FILE
 
 This module contains several HookUpdateDeployTools::methods to help manage programatically:
 
-  * enabling of modules
+  * enabling / disabling / uninstalling modules
   * reverting of Features
   * importing (overwriting) menus
+  * altering a path alias
+  * updating node values (title, status, author, promoted...)
+
+Drupal provides its own functions for enabling modules or reverting features,
+however, most of them run silently without feedback so they are inappropriate
+for use in hook_update_N because they do not provide any feedback as to what is
+happening and whether it was a success or failure.  This module gives voice to
+many of those functions.
 
 ## Features
 -----------
+Every method that can be used within a hook_update_N() includes detailed
+feedback and logging of what was attempted and what the results were.  Updates
+are Failed if the requested operation was not successful so that they can be run
+again, or re-worked.
 
 
 ## Requirements
@@ -35,6 +47,7 @@ This module contains several HookUpdateDeployTools::methods to help manage progr
 
 *  Reverting Features requires the Features module.
 *  Importing menus requires the Menu Import module.
+*  Altering a path requires the Pathauto module.
 
 
 ## Installation
