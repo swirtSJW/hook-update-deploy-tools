@@ -41,6 +41,7 @@ feedback and logging of what was attempted and what the results were.  Updates
 are Failed if the requested operation was not successful so that they can be run
 again, or re-worked.
 
+*BONUS:* This module has a class autoloader, so there is no need to do any module_includes or require_onces.
 
 ## Requirements
 ---------------
