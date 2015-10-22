@@ -14,11 +14,14 @@ CONTENTS OF THIS FILE
  * Importing Menus
  * Updating Node Values
  * Updating Alias
+ * Setting Drupal Variables
  * Bonus Features
  * Maintainers
 
+-------------------------------------------
+
 ## Introduction
----------------
+
 
 This module contains several HookUpdateDeployTools::methods to help manage programatically:
 
@@ -27,6 +30,7 @@ This module contains several HookUpdateDeployTools::methods to help manage progr
   * importing (overwriting) menus
   * altering a path alias
   * updating node values (title, status, author, promoted...)
+  * setting Drupal variables
 
 Drupal provides its own functions for enabling modules or reverting features,
 however, most of them run silently without feedback so they are inappropriate
@@ -34,8 +38,10 @@ for use in hook_update_N because they do not provide any feedback as to what is
 happening and whether it was a success or failure.  This module gives voice to
 many of those functions.
 
+-------------------------------------------
+
 ## Features
------------
+
 Every method that can be used within a hook_update_N() includes detailed
 feedback and logging of what was attempted and what the results were.  Updates
 are Failed if the requested operation was not successful so that they can be run
@@ -43,30 +49,37 @@ again, or re-worked.
 
 *BONUS:* This module has a class autoloader, so there is no need to do any module_includes or require_onces.
 
+-------------------------------------------
+
 ## Requirements
----------------
+
 
 *  Reverting Features requires the Features module.
 *  Importing menus requires the Menu Import module.
 *  Altering a path requires the Pathauto module.
 
+-------------------------------------------
 
 ## Installation
----------------
+
 
 * It is a good practice to add this module as a dependency to your custom
   deployment module.
 * Enable this module
 
+-------------------------------------------
+
 ## Configuration
-----------------
+
 
 * Navigate to /admin/config/hook_update_deploy_tools and enter the name of the Feature that
   is controlling the menu.  (optional:  This is only needed if you will be using
   Hook Update Deploy Tools to import your menus programatically.
 
+-------------------------------------------
+
 ## To Enable a Module(s) in an .install
----------------------------------------
+
 
 
 * Any time you want to enable a module(s) add a hook_update_N() to the .install
@@ -87,9 +100,10 @@ function my_custom_deploy_update_7004() {
   return $message;
 }
 ````
+-------------------------------------------
 
 ## To Disable a Module(s) in an .install
----------------------------------------
+
 
 ````
 /**
@@ -106,9 +120,9 @@ function my_custom_deploy_update_7004() {
   return $message;
 }
 ````
+-------------------------------------------
 
 ## To Uninstall a Module(s) in an .install
----------------------------------------
 
 ````
 /**
@@ -126,8 +140,10 @@ function my_custom_deploy_update_7004() {
 }
 ````
 
+-------------------------------------------
+
 ## To Disable and Uninstall a Module(s) in an .install
----------------------------------------
+
 
 ````
 /**
@@ -145,9 +161,10 @@ function my_custom_deploy_update_7004() {
 }
 ````
 
+-------------------------------------------
 
 ## Revert a Feature(s) in a Feature's own .install
---------------------------------------------------
+
 
 * Any time you want to revert a Feature(s) add a hook_update_N() to the .install
   of that Feature.
@@ -192,9 +209,9 @@ function custom_basic_page_update_7002() {
 }
 ````
 
+-------------------------------------------
 
 ## To Import a Menu in a Feature's .install
--------------------------------------------
 
 Menus can be imported from a text file that matches the standard output of
 the menu_import module.
@@ -222,8 +239,11 @@ $message = HookUpdateDeployTools\Menus::import('menu-bureaus-and-offices');
 return $message;
 ````
 
-## To update the value of a simple node field from a deploy's .install
 -------------------------------------------
+
+## To update the value of a simple node field from a deploy's .install
+
+
 Add this to a hook_update_N in your custom deploy module.install.
 
 ````
@@ -236,8 +256,10 @@ or language like:
 comment, language, promote,  status, sticky, title, tnid, translate, uid
 
 
+-----------------------------------------------
+
 ## To update an alias from a deploy's .install
--------------------------------------------
+
 Add this to a hook_update_N in your custom deploy module.install.
 
 ````
@@ -249,17 +271,38 @@ This will attempt to alter the alias if the old_alias exists.  The language has
 to match the language of the original alias being modified (usually matches the
 node that it is assigned to).
 
+-------------------------------------------
+
+## To set a Drupal variable from a .install
+
+Add something like this to a hook_update_N in your custom deploy module.install.
+
+````
+  $message =  HookUpdateDeployTools\Settings::set('test_var_a', 'String A');
+  $message .=  HookUpdateDeployTools\Settings::set('test_var_b', 'String B');
+  return $message;
+}
+
+````
+
+Variable values can be of any type supported by variable_set().
+*Caution:* If your settings.php contains other files that are brought in by
+include_once or require_once, they will not be used to check for overridden
+values.  As a result you may get a false positive that your variable was
+changed, when it really is overridden by an include in settings.php.
+
+-------------------------------------------
 
 ## BONUS
---------
+
 The following modules are not required, but if you have them enabled they will
 improve the experience:
 
   * Markdown - When the Markdown filter is enabled, display of the module help
     will be rendered with markdown.
 
+-------------------------------------------
 
 ## MAINTAINERS
---------------
 
 * Steve Wirt (swirt) - https://drupal.org/user/138230
