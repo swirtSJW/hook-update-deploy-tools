@@ -32,10 +32,8 @@ class Message {
    *   - WATCHDOG_INFO: Informational messages.
    *   - WATCHDOG_DEBUG: Debug-level messages.
    *   - FALSE: Outputs the message to drush without calling Watchdog.
-   *
    * @param int $indent
    *   (optional). Sets indentation for drush output. Defaults to 1.
-   *
    * @param string $link
    *   (optional) A url to serve as the link in Watchdog.
    *
@@ -44,6 +42,10 @@ class Message {
    *     drush.
    *   - Returns the full message if run by update.php so Drupal can handle the
    *     message.
+   *
+   * @throws DrupalUpdateException
+   *   Exception thrown fails update if watchdog level is WATCHDOG_ERROR,
+   *   WATCHDOG_CRITICAL, WATCHDOG_ALERT, or WATCHDOG_EMERGENCY
    */
   public static function make($message, $variables = array(), $severity = WATCHDOG_NOTICE, $indent = 1, $link = NULL) {
     // Determine what instantiated this message's parent.

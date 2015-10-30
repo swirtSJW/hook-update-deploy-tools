@@ -3,24 +3,25 @@ Hook Update Deploy Tools
 
 CONTENTS OF THIS FILE
 ---------------------
- * Introduction
- * Features
- * Requirements
- * Installation
- * Configuration
- * Enabling modules
- * Disabling and Uninstalling modules
- * Reverting Features
- * Importing Menus
- * Updating Node Values
- * Updating Alias
- * Setting Drupal Variables
- * Bonus Features
- * Maintainers
+ * <a href="#introduction">Introduction</a>
+ * <a href="#requirements">Requirements</a>
+ * <a href="#installation">Installation</a>
+ * <a href="#configuration">Configuration</a>
+ * <a href="#methods">Methods / Uses</a>
+    * <a href="#enable">Enabling modules</a>
+    * <a href="#disable">Disabling and Uninstalling modules</a>
+    * <a href="#revert">Reverting Features</a>
+    * <a href="#field-delete">Deleting Fields</a>
+    * <a href="#import-menu">Importing Menus</a>
+    * <a href="#update-node">Updating Node Values</a>
+    * <a href="#update-alias">Updating Alias</a>
+    * <a href="#variables">Setting Drupal Variables</a>
+ * <a href="#bonus">Bonus Features</a>
+ * <a href="#maintainers">Maintainers</a>
 
 -------------------------------------------
 
-## Introduction
+## <a name="introduction"></a>Introduction
 
 
 This module contains several HookUpdateDeployTools::methods to help manage programatically:
@@ -38,10 +39,6 @@ for use in hook_update_N because they do not provide any feedback as to what is
 happening and whether it was a success or failure.  This module gives voice to
 many of those functions.
 
--------------------------------------------
-
-## Features
-
 Every method that can be used within a hook_update_N() includes detailed
 feedback and logging of what was attempted and what the results were.  Updates
 are Failed if the requested operation was not successful so that they can be run
@@ -51,7 +48,7 @@ again, or re-worked.
 
 -------------------------------------------
 
-## Requirements
+## <a name="requirements"></a>Requirements
 
 
 *  Reverting Features requires the Features module.
@@ -60,7 +57,7 @@ again, or re-worked.
 
 -------------------------------------------
 
-## Installation
+## <a name="installation"></a>Installation
 
 
 * It is a good practice to add this module as a dependency to your custom
@@ -69,16 +66,18 @@ again, or re-worked.
 
 -------------------------------------------
 
-## Configuration
+## <a name="configuration"></a>Configuration
 
 
 * Navigate to /admin/config/hook_update_deploy_tools and enter the name of the Feature that
   is controlling the menu.  (optional:  This is only needed if you will be using
   Hook Update Deploy Tools to import your menus programatically.
 
+## <a name="methods"></a>Method / Uses
+
 -------------------------------------------
 
-## To Enable a Module(s) in an .install
+### <a name="enable"></a>To Enable a Module(s) in an .install
 
 
 
@@ -102,7 +101,7 @@ function my_custom_deploy_update_7004() {
 ````
 -------------------------------------------
 
-## To Disable a Module(s) in an .install
+### <a name="disable"></a>To Disable a Module(s) in an .install
 
 
 ````
@@ -122,7 +121,7 @@ function my_custom_deploy_update_7004() {
 ````
 -------------------------------------------
 
-## To Uninstall a Module(s) in an .install
+### <a name="uninstall"></a>To Uninstall a Module(s) in an .install
 
 ````
 /**
@@ -142,7 +141,7 @@ function my_custom_deploy_update_7004() {
 
 -------------------------------------------
 
-## To Disable and Uninstall a Module(s) in an .install
+### To Disable and Uninstall a Module(s) in an .install
 
 
 ````
@@ -163,7 +162,7 @@ function my_custom_deploy_update_7004() {
 
 -------------------------------------------
 
-## Revert a Feature(s) in a Feature's own .install
+### <a name="revert"></a>Revert a Feature(s) in a Feature's own .install
 
 
 * Any time you want to revert a Feature(s) add a hook_update_N() to the .install
@@ -211,7 +210,20 @@ function custom_basic_page_update_7002() {
 
 -------------------------------------------
 
-## To Import a Menu in a Feature's .install
+### <a name="field-delete"></a>To delete a field from an .install
+
+Add something like this to a hook_update_N in your custom deploy module.install.
+
+````
+  $message =  HookUpdateDeployTools\Fields::deleteInstance('field_name', 'bundle_name', 'content_type');
+  return $message;
+}
+
+````
+
+-------------------------------------------
+
+###  <a name="import-menu"></a>To Import a Menu in a Feature's .install
 
 Menus can be imported from a text file that matches the standard output of
 the menu_import module.
@@ -241,7 +253,7 @@ return $message;
 
 -------------------------------------------
 
-## To update the value of a simple node field from a deploy's .install
+### <a name="update-node"></a>To update the value of a simple node field from a deploy's .install
 
 
 Add this to a hook_update_N in your custom deploy module.install.
@@ -258,7 +270,7 @@ comment, language, promote,  status, sticky, title, tnid, translate, uid
 
 -----------------------------------------------
 
-## To update an alias from a deploy's .install
+### <a name="update-alias"></a>To update an alias from a deploy's .install
 
 Add this to a hook_update_N in your custom deploy module.install.
 
@@ -273,7 +285,7 @@ node that it is assigned to).
 
 -------------------------------------------
 
-## To set a Drupal variable from a .install
+### <a name="variable"></a>To set a Drupal variable from an .install
 
 Add something like this to a hook_update_N in your custom deploy module.install.
 
@@ -293,7 +305,7 @@ changed, when it really is overridden by an include in settings.php.
 
 -------------------------------------------
 
-## BONUS
+## <a name="bonus"></a>BONUS
 
 The following modules are not required, but if you have them enabled they will
 improve the experience:
@@ -303,6 +315,6 @@ improve the experience:
 
 -------------------------------------------
 
-## MAINTAINERS
+## <a name="maintainers"></a>MAINTAINERS
 
-* Steve Wirt (swirt) - https://drupal.org/user/138230
+* Steve Wirt (swirt) - https://www.drupal.org/u/swirt
