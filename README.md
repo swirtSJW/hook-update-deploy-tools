@@ -293,7 +293,7 @@ Add something like this to a hook_update_N in your custom deploy module.install.
   $message =  HookUpdateDeployTools\Settings::set('test_var_a', 'String A');
   $message .=  HookUpdateDeployTools\Settings::set('test_var_b', 'String B');
   return $message;
-}
+
 
 ````
 

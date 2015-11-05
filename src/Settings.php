@@ -28,7 +28,7 @@ class Settings {
    */
   public static function set($name, $value) {
     $original_value = variable_get($name, 'not set');
-    if ($value == $original_value) {
+    if ($value === $original_value) {
       // There is no requested change.  Skip making a change.
       $msg_vars = array(
         '!name' => $name,
@@ -61,15 +61,18 @@ class Settings {
    */
   private static function confirmSet($name, $value, $original_value) {
     $variables = self::reloadVars();
-
-    $saved_value = (isset($variables[$name])) ? $variables[$name] : 'not set';
+    $saved_value = (array_key_exists($name, $variables)) ? $variables[$name] : 'not set';
+    $type = gettype($saved_value);
+    $type_original = gettype($original_value);
     $msg_vars = array(
       '!name' => $name,
       '!value' => print_r($value, TRUE),
       '!saved_value' => print_r($saved_value, TRUE),
       '!original_value' => print_r($original_value, TRUE),
+      '!type' => $type,
+      '!typeorig' => $type_original,
     );
-    switch ($saved_value) {
+    switch ("$saved_value") {
       case 'not set':
         // There was no setting saved.  Fail update.
         $message = "The variable '!name' was not saved at all. It does not exist.";
@@ -78,13 +81,21 @@ class Settings {
 
       case $value:
         // The save worked correctly.
-        $message = "The variable '!name' was changed from '!original_value' to '!value'.";
+        if ($saved_value === 'not set' || $original_value === 'not set') {
+          // The variable was NOT originally set.
+          $message = "The variable '!name' was initiated and set to !type:'!value'.";
+        }
+        else {
+          // The variable was origianlly set.
+          $message = "The variable '!name' was changed from !typeorig:'!original_value' to !type:'!value'.";
+        }
+
         $return = Message::make($message, $msg_vars, WATCHDOG_INFO, 1);
         break;
 
       default:
         // The value did not match what was saved. Fail update.
-        $message = "The variable '!name' did not correctly set to '!value'.  Value of '!saved_value' found instead.  Most likely caused by a \$conf override in settings.php.";
+        $message = "The variable '!name' did not correctly set to '!value'.  Value of !type:'!saved_value' found instead.  Most likely caused by a \$conf override in settings.php.";
         $return = Message::make($message, $msg_vars, WATCHDOG_ERROR, 1);
         break;
     }
