@@ -1,0 +1,115 @@
+/**
+ * @file
+ * A series of update hooks to test setting various types of drupal variables.
+ * For module developer testing only.
+ */
+
+
+/**
+ * Settings initialize test.
+ */
+function deploy_test_update_7015() {
+  $msg = HookUpdateDeployTools\Settings::set('string_1_test', '1');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_true_test', TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_1_test', 1);
+  $msg .= HookUpdateDeployTools\Settings::set('string_string_test', 'wahoooo im free');
+  $msg .= HookUpdateDeployTools\Settings::set('string_0_test', '0');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_false_test', FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_0_test', 0);
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_false_test', 'FALSE');
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_true_test', 'TRUE');
+  $new_array = array('thunder' => 1, 'lightning' => TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('array_test', $new_array);
+  $new_object = json_decode(json_encode($new_array), FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('object_test', $new_object);
+
+
+  return $msg;
+}
+
+/**
+ * Settings alter with no actual change test (same as what is saved).
+ */
+function deploy_test_update_7016() {
+  $msg = HookUpdateDeployTools\Settings::set('string_1_test', '1');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_true_test', TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_1_test', 1);
+  $msg .= HookUpdateDeployTools\Settings::set('string_string_test', 'wahoooo im free');
+  $msg .= HookUpdateDeployTools\Settings::set('string_0_test', '0');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_false_test', FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_0_test', 0);
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_false_test', 'FALSE');
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_true_test', 'TRUE');
+  $new_array = array('thunder' => 1, 'lightning' => TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('array_test', $new_array);
+  $new_object = json_decode(json_encode($new_array), FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('object_test', $new_object);
+
+
+  return $msg;
+}
+
+/**
+ * Settings alter without any change of type (only values changed) test.
+ */
+function deploy_test_update_7017() {
+  $msg = HookUpdateDeployTools\Settings::set('string_1_test', '0');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_true_test', FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_1_test', 0);
+  $msg .= HookUpdateDeployTools\Settings::set('string_string_test', "I've changed");
+  $msg .= HookUpdateDeployTools\Settings::set('string_0_test', '1');
+  $msg .= HookUpdateDeployTools\Settings::set('bool_false_test', TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_0_test', 1);
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_false_test', 'TRUE');
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_true_test', 'FALSE');
+  $new_array = array('thunder' => 0, 'lightning' => FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('array_test', $new_array);
+  $new_object = json_decode(json_encode($new_array), FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('object_test', $new_object);
+
+
+  return $msg;
+}
+
+/**
+ * Settings alter with type change test.
+ */
+function deploy_test_update_7018() {
+  $msg = HookUpdateDeployTools\Settings::set('string_1_test', 1);
+  $msg .= HookUpdateDeployTools\Settings::set('bool_true_test', TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('int_1_test', '1');
+  $msg .= HookUpdateDeployTools\Settings::set('string_string_test', 25);
+  $msg .= HookUpdateDeployTools\Settings::set('string_0_test', 0);
+  $msg .= HookUpdateDeployTools\Settings::set('bool_false_test', 'FALSE');
+  $msg .= HookUpdateDeployTools\Settings::set('int_0_test', '1');
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_false_test', TRUE);
+  $msg .= HookUpdateDeployTools\Settings::set('fakebool_true_test', FALSE);
+  $new_array = array('thunder' => 0, 'lightning' => FALSE);
+  $new_object = json_decode(json_encode($new_array), FALSE);
+  $msg .= HookUpdateDeployTools\Settings::set('array_test', $new_object);
+
+  $msg .= HookUpdateDeployTools\Settings::set('object_test', $new_array);
+
+
+  return $msg;
+}
+
+
+/**
+ * Delete all the settings for re-running the tests.
+ */
+function deploy_test_update_7019() {
+  variable_del('string_1_test');
+  variable_del('bool_true_test');
+  variable_del('int_1_test');
+  variable_del('string_string_test');
+  variable_del('string_0_test');
+  variable_del('bool_false_test');
+  variable_del('int_0_test');
+  variable_del('fakebool_false_test');
+  variable_del('fakebool_true_test');
+  variable_del('array_test');
+  variable_del('object_test');
+  $msg = "Deleted all the vars from these tests.";
+  return $msg;
+}

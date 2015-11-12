@@ -28,7 +28,7 @@ class Settings {
    */
   public static function set($name, $value) {
     $original_value = variable_get($name, 'not set');
-    if ($value === $original_value) {
+    if (($value === $original_value) || (is_object($value) && is_object($original_value) && $value == $original_value)) {
       // There is no requested change.  Skip making a change.
       $msg_vars = array(
         '!name' => $name,
@@ -72,21 +72,22 @@ class Settings {
       '!type' => $type,
       '!typeorig' => $type_original,
     );
-    switch ("$saved_value") {
-      case 'not set':
+    // Switct race: First one to evaluate TRUE wins.
+    switch (TRUE) {
+      case ($saved_value === 'not set'):
         // There was no setting saved.  Fail update.
         $message = "The variable '!name' was not saved at all. It does not exist.";
         $return = Message::make($message, $msg_vars, WATCHDOG_ERROR, 1);
         break;
 
-      case $value:
+      case ($saved_value == $value):
         // The save worked correctly.
         if ($saved_value === 'not set' || $original_value === 'not set') {
           // The variable was NOT originally set.
           $message = "The variable '!name' was initiated and set to !type:'!value'.";
         }
         else {
-          // The variable was origianlly set.
+          // The variable was originally set.
           $message = "The variable '!name' was changed from !typeorig:'!original_value' to !type:'!value'.";
         }
 
