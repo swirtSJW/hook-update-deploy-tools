@@ -31,7 +31,7 @@ function hook_update_deploy_tools_help($path, $arg) {
  * Implements hook_menu().
  */
 function hook_update_deploy_tools_menu() {
-  $items['admin/config/hook_update_deploy_tools'] = array(
+  $items['admin/config/development/hook_update_deploy_tools'] = array(
     'title' => 'Hook Update Deploy Tools Settings',
     'description' => 'Settings for the Hook Update Deploy Tools module.',
     'page callback' => 'drupal_get_form',
