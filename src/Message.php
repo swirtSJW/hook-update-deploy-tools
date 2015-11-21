@@ -48,34 +48,38 @@ class Message {
    *   WATCHDOG_CRITICAL, WATCHDOG_ALERT, or WATCHDOG_EMERGENCY
    */
   public static function make($message, $variables = array(), $severity = WATCHDOG_NOTICE, $indent = 1, $link = NULL) {
+    $variables = self::stringifyValues($variables);
     // Determine what instantiated this message's parent.
     $trace = debug_backtrace();
+    $called_by = '';
     if (isset($trace[2])) {
       // $trace[2] is usually the hook update that instantiated this message.
       if (!empty($trace[2]['class'])) {
-        $type = $trace[2]['class'];
+        $called_by = $trace[2]['class'];
       }
-      elseif (!empty($trace[2]['function'])) {
-        $type = $trace[2]['function'];
+      elseif (!empty($trace[2]['function'])  && (stripos($trace[2]['function'], 'update_do_one') === FALSE)) {
+        $called_by = $trace[2]['function'];
       }
-      else {
-        $type = 'unknown';
+      elseif (!empty($trace[1]['function']) && (stripos($trace[1]['function'], 'update_do_one') === FALSE)) {
+        $called_by = $trace[1]['function'];
       }
     }
+    // Try to determine the module caller to pass to Watchdog.
+    $wd_type = (empty($called_by)) ? 'hook_update_deploy_tools' : current(explode('_update_', $called_by));
     // t() might not be available at .install.
     $t = get_t();
     $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
     $formatted_message = format_string($message, $variables);
 
     if ($severity !== FALSE) {
-      watchdog("hook_update_deploy_tools", $fail_header . $message, $variables, $severity, $link);
+      watchdog($wd_type, $fail_header . $message, $variables, $severity, $link);
     }
     // Check to see if this is run by drush and no WD error was
     // already sent.  WATCHDOG_ERROR and up get sent to terminal by WD.
     if (drupal_is_cli() && (($severity > WATCHDOG_WARNING) || $severity === FALSE)) {
       // Being run through drush, so output feedback to drush, and not already
       // output to terminal so output it.
-      drush_print("{$fail_header}{$type}:{$formatted_message}", $indent);
+      drush_print("{$fail_header}{$called_by}:{$formatted_message}", $indent);
     }
     else {
       // Being run by update.php so translate and return.
@@ -83,9 +87,9 @@ class Message {
     }
     // Error or more serious? Fail the hook_update_N.
     if (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) {
-      throw new \DrupalUpdateException("{$fail_header}{$type}: {$formatted_message}");
+      throw new \DrupalUpdateException("{$fail_header}{$called_by}: {$formatted_message}");
     }
-    return (!empty($return_message)) ? "{$fail_header}{$type}: {$return_message}" : '';
+    return (!empty($return_message)) ? "{$fail_header}{$called_by}: {$return_message}" : '';
   }
 
 
@@ -108,5 +112,24 @@ class Message {
         drush_print("This variable was EMPTY. \n", 1);
       }
     }
+  }
+
+  /**
+   * Loops through an array and pretty prints any values that are arrays or obj.
+   *
+   * @param array $variables
+   *   A variables array ready for watchdog, but possibly containing arrays or
+   *   objects as first level array values..
+   *
+   * @return array
+   *   A single level array where all values are pretty printed.
+   */
+  public static function stringifyValues($variables) {
+    if (is_array($variables) || is_object($variables)) {
+      foreach ($variables as $key => $value) {
+        $variables[$key] = (is_array($value) || is_object($value)) ? '<pre>' . print_r($value, TRUE) . '</pre>' : $value;
+      }
+    }
+    return $variables;
   }
 }
