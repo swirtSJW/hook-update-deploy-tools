@@ -12,7 +12,7 @@
 function hook_update_deploy_tools_enable() {
   // Provide friendly message to get started with permissions and configuration.
   drupal_set_message(t('The hook_update_deploy_tools module has been successfully enabled.  Be sure to set <a href="@configure">configuration</a> options.', array(
-      '@configure' => url('admin/config/hook_update_deploy_tools'),
+      '@configure' => url('admin/config/development/hook_update_deploy_tools'),
           )
   ));
 }
