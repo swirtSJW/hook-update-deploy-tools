@@ -95,14 +95,14 @@ class Menus implements ImportInterface {
 
       // Output a summary before shutting this down.
       $done = $t("Menu imports NOT complete! \n");
-      $done .= HudtInternal::getImportSummary($completed, $total_requested);
+      $done .= HudtInternal::getSummary($completed, $total_requested, 'Imported');
       Message::make($done, array(), FALSE, $indent);
 
       throw new \DrupalUpdateException($t('Caught Exception: Update aborted!  !error', $variables));
     }
 
     $done = $t('Menu imports complete');
-    $done .= HudtInternal::getImportSummary($completed, $total_requested);
+    $done .= HudtInternal::getSummary($completed, $total_requested, 'Imported');
 
     return $done;
   }

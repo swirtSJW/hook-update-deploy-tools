@@ -103,13 +103,13 @@ class Rules implements ImportInterface, ExportInterface {
       }
 
       // Output a summary before shutting this down.
-      $done = HudtInternal::getImportSummary($completed, $total_requested);
+      $done = HudtInternal::getSummary($completed, $total_requested, 'Imported');
       Message::make($done, array(), FALSE, 1);
 
       throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
     }
 
-    $done = HudtInternal::getImportSummary($completed, $total_requested);
+    $done = HudtInternal::getSummary($completed, $total_requested, 'Imported');
     return $done;
   }
 
@@ -177,6 +177,8 @@ class Rules implements ImportInterface, ExportInterface {
       }
     }
     catch (\Exception $e) {
+      // Any errors from this command do not need to be watchdog logged.
+      $e->logIt = FALSE;
       $vars = array(
         '!error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
       );

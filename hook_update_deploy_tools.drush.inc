@@ -204,7 +204,7 @@ function drush_hook_update_deploy_tools_site_deploy_export($type, $machine_name)
       // Check that we have what it needs to export.
       $class::canExport();
       // It can export so can safely proceed.
-      $msg = dt('Exported') . ": [$machine_name] => " . $class::export($machine_name);
+      $msg = dt('Exported') . " $type: [$machine_name] => " . $class::export($machine_name);
     }
     else {
       // It does not implement ExportInterface.  Throw an exception.

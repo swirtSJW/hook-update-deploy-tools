@@ -14,6 +14,7 @@ CONTENTS OF THIS FILE
     * <a href="#revert">Reverting Features</a>
     * <a href="#field-delete">Deleting Fields</a>
     * <a href="#import-menu">Importing Menus</a>
+    * <a href="#import-page-manager-page">Importing Page Manager page</a> and <a href="#export-page-manager-page">Exporting Page Manager page</a>
     * <a href="#import-rule">Importing Rules</a> and <a href="#export-rule">Exporting Rules</a>
     * <a href="#update-node">Updating Node Values</a>
     * <a href="#update-alias">Updating Alias</a>
@@ -33,6 +34,8 @@ This module contains several HookUpdateDeployTools::methods to help manage progr
   * enabling / disabling / uninstalling modules
   * reverting of Features
   * importing (overwriting) menus
+  * exporting/importing Page Manager pages
+  * exporting/importing Rules
   * altering a path alias
   * updating node values (title, status, author, promoted...)
   * setting Drupal variables
@@ -62,6 +65,8 @@ that will handle sitewide deployment.
 
 *  Reverting Features requires the Features module.
 *  Importing menus requires the Menu Import module.
+*  Importing/Exporting Rules requires the Rules module.
+*  Importing/Exporting Page Manager pages requires ctools & page_manager modules.
 *  Altering a path requires the Pathauto module.
 
 -------------------------------------------
@@ -82,12 +87,13 @@ that will handle sitewide deployment.
 * Navigate to /admin/config/development/hook_update_deploy_tools and enter the
   name of your site's custom deploy module.
 * If you have other Feature(s) that would be a better location for import files
-  for menus and rules, add those as well.  This is only needed if you will be
-  using Hook Update Deploy Tools to import your menus  or rules.
+  for menus, Page Manager pages, or rules, add those as well.  This is only needed if you will be
+  using Hook Update Deploy Tools to import them.
+
+  -------------------------------------------
 
 ## <a name="methods"></a>Method / Uses
 
--------------------------------------------
 
 ### <a name="enable"></a>To Enable a Module(s) in an .install
 
@@ -270,6 +276,60 @@ Feature
 
 -------------------------------------------
 
+###  <a name="import-page-manager-page"></a>To Import a Page Manager page in a Feature's .install
+
+Page Manager pages can be imported from a text file that matches the standard
+output of the the Page Manager module.
+https://www.drupal.org/project/ctools
+
+In order import Page Manager pages on deployment, it is assumed/required that
+you have a Feature that controls pages or a custom deploy module where the
+import files can reside. Within that module, add a directory
+'page_manager_source'. This is where you will place your page import files.
+The files will be named using the machine name of the Page Manager page.
+(machine-name-export.txt) You will also need to make Hook Update Deploy
+Tools aware of this custom menu Feature by going here
+/admin/config/development/hook_update_deploy_tools and entering the machine name
+of the Page Manager Feature or let it default to your custom deploy module.
+Though for true deployment, this value should be assigned
+through a hook_update_N using
+
+```php
+  variable_set('hook_update_deploy_tools_page_manager_feature', '<feature_machine_name>');
+```
+
+When you are ready to import a page, add this to a hook_update_N in your Page
+Manager Feature:
+
+```php
+  $message = HookUpdateDeployTools\PageManager::import('page-machine-name');
+  return $message;
+```
+
+or to do multiples
+
+```php
+  $pages = array('page-machine-name', 'page-machine-name-other');
+  $message = HookUpdateDeployTools\PageManager::import($pages);
+  return $message;
+```
+###  <a name="export-page-manager-page"></a>To export a Page Manager page to a text file using drush
+
+You can use drush to export a Page Manager page to a text file. The file will
+be created in the module or feature that you identified for use with Page
+Manager here:
+/admin/config/development/hook_update_deploy_tools
+Look up the machine name of your Page in the Page Manager UI.
+Then go to your terminal and type
+
+```
+drush site-deploy-export PageManager MACHINE_NAME_OF_PAGE
+```
+Feedback from the drush command will tell you where the file has been created,
+or if there were any issues.
+
+-------------------------------------------
+
 ###  <a name="import-rule"></a>To Import a Rule in a Feature's .install
 
 Rules can be imported from a text file that matches the standard output of
@@ -277,22 +337,21 @@ the the Rules module.
 https://www.drupal.org/project/rules
 
 In order import Rules on deployment, it is assumed/required that you have a
-Feature that controls rules or a custom deploy module where the import files can reside.
-Within that Feature, add a directory 'rules_source'.
+Feature that controls rules or a custom deploy module where the import files
+can reside. Within that Feature, add a directory 'rules_source'.
 This is where you will place your Rule import files.  The files will be named
-the same way they would be if generated by menu_import
-(menu-machine-name-export.txt) You will also need to make Hook Update Deploy
+(rule-machine-name-export.txt) You will also need to make Hook Update Deploy
 Tools aware of this custom menu Feature by going here
 /admin/config/development/hook_update_deploy_tools and entering the machine name
-of the rules Feature or let it default to your custom deploy module.
+of the Rules Feature or let it default to your custom deploy module.
 Though for true deployment, this value should be assigned
 through a hook_update_N using
 
 ```php
-  variable_set('hook_update_deploy_tools_rule_feature', '<menu_feature_machine_name>');
+  variable_set('hook_update_deploy_tools_rules_feature', '<rules_feature_machine_name>');
 ```
 
-When you are ready to import a menu, add this to a hook_update_N in your menu
+When you are ready to import a Rule, add this to a hook_update_N in your menu
 Feature
 
 ```php
@@ -307,12 +366,12 @@ or to do multiples
   $message = HookUpdateDeployTools\Rules::import($rules);
   return $message;
 ```
-###  <a name="export-rule"></a>To export a rule to a text file using drush
+###  <a name="export-rule"></a>To export a Rule to a text file using drush
 
 You can use drush to export a rule to a text file. The file will be created in
 the module or feature that you identified for use with Rules here
 /admin/config/development/hook_update_deploy_tools
-Look up the machine name of your Rule in the Rule UI.
+Look up the machine name of your Rule in the Rules UI.
 Then go to your terminal and type
 
 ```
@@ -418,7 +477,8 @@ throw new HookUpdateDeployTools\HudtException($msg, $variables, WATCHDOG_ERROR, 
 ```
 
 -------------------------------------------
-<a name="lookup-set">Lookup or set last run hook_update_n</a>
+
+###<a name="lookup-set">Lookup or set last run hook_update_n</a>
 
 In developing hook_updates_N's it is often necessary know what the last run
 update is on a server.
@@ -455,5 +515,5 @@ improve the experience:
 
 * Steve Wirt (swirt) - https://www.drupal.org/u/swirt
 
-The repository for this site is available on Drupal.org or 
+The repository for this site is available on Drupal.org or
 https://github.com/swirtSJW/hook-update-deploy-tools

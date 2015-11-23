@@ -88,13 +88,13 @@ class Features {
       }
 
       // Output a summary before shutting this down.
-      $done = HudtInternal::getImportSummary($completed, $total_requested);
+      $done = HudtInternal::getSummary($completed, $total_requested, 'Reverted');
       Message::make($done, array(), FALSE, 1);
 
       throw new \DrupalUpdateException($t('Caught Exception: Update aborted!  !error', $vars));
     }
 
-    $done = HudtInternal::getImportSummary($completed, $total_requested);
+    $done = HudtInternal::getSummary($completed, $total_requested, 'Reverted');
     $message = Message::make('The requested reverts were processed successfully. !done', array('!done' => $done), WATCHDOG_INFO);
     return $message;
   }
