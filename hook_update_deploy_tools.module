@@ -79,6 +79,20 @@ function hook_update_deploy_tools_admin() {
     '#required' => FALSE,
   );
 
+  $description = t("This is the machine name for the Feature controlling the Panels. example: my_panels_feature.") . '</br>';
+  $description .= t("This determines where Panels import files must reside.") . '</br>';
+  $path = HookUpdateDeployTools\HudtInternal::getStoragePath('page_manager', TRUE);
+  $description .= t("Currently using: %path", array('%path' => $path));
+  $form['hook_update_deploy_tools_page_manager_feature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of Page Manager Feature or custom deploy module'),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_page_manager_feature', '')),
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => $description,
+    '#required' => FALSE,
+  );
+
   $description = t("This is the machine name for the Feature controlling the Rules. example: my_rules_feature.") . '</br>';
   $description .= t("This determines where Rules import files must reside.") . '</br>';
   $path = HookUpdateDeployTools\HudtInternal::getStoragePath('rules', TRUE);
@@ -86,7 +100,7 @@ function hook_update_deploy_tools_admin() {
   $form['hook_update_deploy_tools_rules_feature'] = array(
     '#type' => 'textfield',
     '#title' => t('Machine name of Rule Feature or custom deploy module'),
-    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_rule_feature', '')),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_rules_feature', '')),
     '#size' => 60,
     '#maxlength' => 60,
     '#description' => $description,
@@ -94,4 +108,20 @@ function hook_update_deploy_tools_admin() {
   );
 
   return system_settings_form($form);
+}
+
+
+/**
+ * Used for debugging and HUDT development in drush and drupal simultaneously.
+ *
+ * @param mixed $thing
+ *   The thing to output.
+ */
+function hudt_squeal($thing) {
+  if (function_exists('drush_print_r')) {
+    drush_print_r($thing);
+  }
+  else {
+    dpm($thing);
+  }
 }

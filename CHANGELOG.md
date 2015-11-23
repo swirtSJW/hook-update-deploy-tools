@@ -1,6 +1,13 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
-* 
+
+
+hook_update_deploy_tools 7.x-1.2 March 31, 2016
+-----------------------------------------------
+* Added PageManager page export and import.
+https://www.drupal.org/node/2619258
+* Adjusted HudtInternal::getSummary() to report operation.
+* Adjusted HudtInternal::getStoragePath to throw an exception.
 
 
 

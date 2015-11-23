@@ -110,16 +110,17 @@ class HudtInternal {
    * @return string
    *   The report of what was completed.
    */
-  public static function getImportSummary($completed, $total_requested) {
+  public static function getSummary($completed, $total_requested, $operation) {
     $t = get_t();
     $count = count($completed);
     $vars = array(
       '@count' => $count,
       '!completed' => print_r($completed, TRUE),
       '@total' => $total_requested,
+      '@operation' => $operation,
     );
 
-    return $t("Summary: Imported @count/@total.  Completed the following:\n !completed", $vars);
+    return $t("Summary: @operation @count/@total.  Completed the following:\n !completed", $vars);
   }
 
   /**
@@ -171,12 +172,13 @@ class HudtInternal {
       }
     }
     else {
-      // No storage of this type, throw exception, call this update a failure.
-      $msg = 'There is no storage of type !type to import from. Internal Hook Update Deploy Tools error.';
-      $vars = array(
+      // No storage of this type, throw exception, call this a failure.
+      $message = 'There is no storage of type !type to read/write. Internal Hook Update Deploy Tools error.';
+      $variables = array(
         '!type' => $storage_type,
       );
-      Message::make($msg, $vars, WATCHDOG_ERROR, 1);
+
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
     }
   }
 
@@ -192,7 +194,7 @@ class HudtInternal {
       'default' => 'hook_update_deploy_tools_deploy_module',
       'menu' => 'hook_update_deploy_tools_menu_feature',
       'node' => 'hook_update_deploy_tools_node_feature',
-      'panels' => 'hook_update_deploy_tools_panels_feature',
+      'page_manager' => 'hook_update_deploy_tools_page_manager_feature',
       'rules' => 'hook_update_deploy_tools_rules_feature',
     );
     return $storage_map;
