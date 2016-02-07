@@ -1,0 +1,8 @@
+name: 'Hook Update Deploy Tools'
+type: module
+description: 'Tools to help process automated deployment of modules, features, and menus.'
+package: Deploy
+version: 8.x-1.0
+core: 8.x
+configure: action.admin
+hidden: false
