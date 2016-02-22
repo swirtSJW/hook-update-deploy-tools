@@ -66,6 +66,13 @@ class Message {
     }
     // Try to determine the module caller to pass to Watchdog.
     $wd_type = (empty($called_by)) ? 'hook_update_deploy_tools' : current(explode('_update_', $called_by));
+    // Clean the watchdog of any types that are known nonsense from backtrace.
+    $wd_type_giberish = array(
+      // Bad type => Good type.
+      'call_user_func_array' => 'hook_update_deploy_tools',
+      'site_deploy_install' => 'site_deploy',
+    );
+    $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;
     // t() might not be available at .install.
     $t = get_t();
     $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
@@ -79,7 +86,7 @@ class Message {
     if (drupal_is_cli() && (($severity > WATCHDOG_WARNING) || $severity === FALSE)) {
       // Being run through drush, so output feedback to drush, and not already
       // output to terminal so output it.
-      drush_print("{$fail_header}{$called_by}:{$formatted_message}", $indent);
+      drush_print("{$fail_header}{$wd_type}: {$formatted_message}", $indent);
     }
     else {
       // Being run by update.php so translate and return.
@@ -87,9 +94,9 @@ class Message {
     }
     // Error or more serious? Fail the hook_update_N.
     if (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) {
-      throw new \DrupalUpdateException("{$fail_header}{$called_by}: {$formatted_message}");
+      throw new \DrupalUpdateException("{$fail_header}{$wd_type}: {$formatted_message}");
     }
-    return (!empty($return_message)) ? "{$fail_header}{$called_by}: {$return_message}" : '';
+    return (!empty($return_message)) ? "{$fail_header}{$wd_type}: {$return_message}" : '';
   }
 
 
