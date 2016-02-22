@@ -45,6 +45,11 @@ feedback and logging of what was attempted and what the results were.  Updates
 are Failed if the requested operation was not successful so that they can be run
 again, or re-worked.
 
+To create a custom deploy module for your site, run 'drush site-deploy-init'.
+It will create a starter deploy module 'site_deploy' in modules/custom.
+The module site_deploy's .install should be used to place your hook_update_N()
+that will handle sitewide deployment.
+
 *BONUS:* This module has a class autoloader, so there is no need to do any module_includes or require_onces.
 
 -------------------------------------------
@@ -64,6 +69,7 @@ again, or re-worked.
 * It is a good practice to add this module as a dependency to your custom
   deployment module.
 * Enable this module
+* (optional) run 'site-deploy-init' to create site_deploy module in modules/custom.
 
 -------------------------------------------
 
