@@ -1,0 +1,21 @@
+Drupal 8 automates allows for more fluid changes of site configuration, but
+there is still a need to make controlled changes as part of a release and get
+feedback on them as part of the release.
+
+The good news is, Drupal 8's implementation of hook_update_N() is pretty much
+unchanged, so it will just be a matter of getting each method to speak D8.
+In cases where D8 methods exist that make a hook_update_deploy_tools method
+obsolete, it will be removed.
+
+Tasks: (possibly out of order)
+[] Replace watchdog messaging with logger class.
+[] Update site_deploy maker
+[] Update Message methods if needed.
+[] Update Features methods.
+[] Update Modules methods.
+[] Update Fields
+[] Update Paths
+[] Update Nodes
+[] Update Menus
+[] Update Settings
+[] Update Check

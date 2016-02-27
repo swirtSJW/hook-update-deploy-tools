@@ -1,10 +1,11 @@
 <?php
 /**
  * @file
- * Helper class to manage watchdog and commandline messaging during update.
+ * Helper class to manage logging and commandline messaging during updates.
  */
 
 namespace HookUpdateDeployTools;
+use Drupal\Core\Logger\RfcLogLevel;
 
 class Message {
   /**
@@ -22,20 +23,21 @@ class Message {
    *   translate.
    * @param int $severity
    *   The severity of the message; one of the following values as defined by
-   *   watchdog.  WATCHDOG_ERROR and up throws a notice and fails the update.
-   *   - WATCHDOG_EMERGENCY: Emergency, system is unusable.
-   *   - WATCHDOG_ALERT: Alert, action must be taken immediately.
-   *   - WATCHDOG_CRITICAL: Critical conditions.
-   *   - WATCHDOG_ERROR: Error conditions.
-   *   - WATCHDOG_WARNING: Warning conditions.
-   *   - WATCHDOG_NOTICE: (default) Normal but significant conditions.
-   *   - WATCHDOG_INFO: Informational messages.
-   *   - WATCHDOG_DEBUG: Debug-level messages.
-   *   - FALSE: Outputs the message to drush without calling Watchdog.
+   *   Psr\Log.  RfcLogLevel::ERROR and up throws a notice and fails the update.
+   * debug, info, notice, warning, error, critical, alert, emergency.
+   *   - RfcLogLevel::EMERGENCY: Emergency, system is unusable.
+   *   - RfcLogLevel::ALERT: Alert, action must be taken immediately.
+   *   - RfcLogLevel::CRITICAL: Critical conditions.
+   *   - RfcLogLevel::ERROR: Error conditions.
+   *   - RfcLogLevel::WARNING: Warning conditions.
+   *   - RfcLogLevel::NOTICE: (default) Normal but significant conditions.
+   *   - RfcLogLevel::INFO: Informational messages.
+   *   -  RfcLogLevel::DEBUG: Debug-level messages.
+   *   - FALSE: Outputs the message to drush without calling logging to dblog.
    * @param int $indent
    *   (optional). Sets indentation for drush output. Defaults to 1.
    * @param string $link
-   *   (optional) A url to serve as the link in Watchdog.
+   *   (optional) A url to serve as the link in Watchdog. Unsuported?
    *
    * @return string
    *   - Returns an empty string to support legacy messaging style when run by
@@ -44,13 +46,14 @@ class Message {
    *     message.
    *
    * @throws DrupalUpdateException
-   *   Exception thrown fails update if watchdog level is WATCHDOG_ERROR,
-   *   WATCHDOG_CRITICAL, WATCHDOG_ALERT, or WATCHDOG_EMERGENCY
+   *   Exception thrown fails update if logger level is RfcLogLevel::ERROR,
+   *   RfcLogLevel::CRITICAL, RfcLogLevel::ALERT, or RfcLogLevel::EMERGENCY
    */
-  public static function make($message, $variables = array(), $severity = WATCHDOG_NOTICE, $indent = 1, $link = NULL) {
+  public static function make($message, $variables = array(), $severity = RfcLogLevel::NOTICE, $indent = 1, $link = NULL) {
     $variables = self::stringifyValues($variables);
     // Determine what instantiated this message's parent.
     $trace = debug_backtrace();
+
     $called_by = '';
     if (isset($trace[2])) {
       // $trace[2] is usually the hook update that instantiated this message.
@@ -64,19 +67,20 @@ class Message {
         $called_by = $trace[1]['function'];
       }
     }
-    // Try to determine the module caller to pass to Watchdog.
+    // Try to determine the module caller to pass to Logger.
     $wd_type = (empty($called_by)) ? 'hook_update_deploy_tools' : current(explode('_update_', $called_by));
     // t() might not be available at .install.
     $t = get_t();
-    $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
+    $fail_header = (($severity <= RfcLogLevel::ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
     $formatted_message = format_string($message, $variables);
 
     if ($severity !== FALSE) {
-      watchdog($wd_type, $fail_header . $message, $variables, $severity, $link);
+      \Drupal::logger('HookUpdateDeployTools')->log($severity, $fail_header . $message, $variables);
     }
     // Check to see if this is run by drush and no WD error was
-    // already sent.  WATCHDOG_ERROR and up get sent to terminal by WD.
-    if (drupal_is_cli() && (($severity > WATCHDOG_WARNING) || $severity === FALSE)) {
+    // already sent.  RfcLogLevel::ERROR and up get sent to terminal by WD.
+
+    if (drupal_is_cli() && (($severity > RfcLogLevel::WARNING) || $severity === FALSE)) {
       // Being run through drush, so output feedback to drush, and not already
       // output to terminal so output it.
       drush_print("{$fail_header}{$called_by}:{$formatted_message}", $indent);
@@ -86,7 +90,7 @@ class Message {
       $return_message = $t($message, $variables) . " \n";
     }
     // Error or more serious? Fail the hook_update_N.
-    if (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) {
+    if (($severity <= RfcLogLevel::ERROR) && $severity !== FALSE) {
       throw new \DrupalUpdateException("{$fail_header}{$called_by}: {$formatted_message}");
     }
     return (!empty($return_message)) ? "{$fail_header}{$called_by}: {$return_message}" : '';
@@ -118,7 +122,7 @@ class Message {
    * Loops through an array and pretty prints any values that are arrays or obj.
    *
    * @param array $variables
-   *   A variables array ready for watchdog, but possibly containing arrays or
+   *   A variables array ready for logger, but possibly containing arrays or
    *   objects as first level array values..
    *
    * @return array
