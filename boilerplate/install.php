@@ -17,7 +17,7 @@ function site_deploy_install() {
   // after the development site has been up and running.  Upon install it will
   // run through all the currently existing hook_update_N.
   // See http://dcycleproject.org/node/43
-  for ($i = 7000; $i < 8000; $i++) {
+  for ($i = 8000; $i < 9000; $i++) {
     $existing_update_n = 'site_deploy_update_' . $i;
     $sandbox = array();
     if (function_exists($existing_update_n)) {
@@ -25,7 +25,7 @@ function site_deploy_install() {
       $highest_run = $i;
     }
   }
-  HookUpdateDeployTools\Message::make('Site_deploy_update_N from 7000 to !max have been run.', array('!max' => $highest_run), WATCHDOG_INFO);
+  HookUpdateDeployTools\Message::make('Site_deploy_update_N from 8000 to !max have been run.', array('!max' => $highest_run), WATCHDOG_INFO);
   HookUpdateDeployTools\Message::varDumpToDrush($messages);
 }
 
@@ -54,7 +54,7 @@ function site_deploy_uninstall() {
 /**
  * Whatever it placed in this docblock gets displayed upon drush updb.
  */
-function site_deploy_update_7000(&$sandbox) {
+function site_deploy_update_8001(&$sandbox) {
   // Whatever code is placed here gets run once upon 'drush updb' or update.php.
   return HookUpdateDeployTools\Message::make("Whatever is returned is displayed after this update runs.");
 }

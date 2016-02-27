@@ -1,0 +1,14 @@
+name: Site Deploy
+description: A module to assist in deploying this site's code and configuration.
+package: Custom
+
+type: module
+core: 8.x
+
+dependencies:
+  - hook_update_deploy_tools
+
+
+# Avoid placing other modules here to make them artificially dependent.
+# It is a bad deployment practice.
+# Enable them through hook_update_N in .install or config import.

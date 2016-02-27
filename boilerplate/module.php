@@ -1,5 +1,5 @@
 <?php
 /**
  * @file
- * This module file can remain blank.
+ * Contains any module level hooks, but can remain blank.
  */

@@ -1,0 +1,6 @@
+{
+    "name": "drupal/site_deploy",
+    "description": "A module to assist in deploying this site's code and configuration.",
+    "type": "drupal-module",
+    "license": "GPL-2.0+"
+}

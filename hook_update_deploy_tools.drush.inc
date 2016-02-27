@@ -70,11 +70,12 @@ function hook_update_deploy_tools_validate() {
  *   The path and name of the directory  where site_deploy should be created.
  */
 function drush_hook_update_deploy_tools_site_deploy_init($directory_path = '../custom') {
+  $module_name = 'site_deploy';
   // Check to see if site_deploy already exists in the site.
-  $exists = drupal_get_filename('module', 'site_deploy');
+  $exists = drupal_get_filename('module', $module_name);
   if ($exists) {
     // site_deploy already exists.  Error out.
-    $error = dt("The module site_deploy already exists at !location.", array('!location' => $exists));
+    $error = dt("The module @name already exists at !location.", array('@name' => $module_name, '!location' => $exists));
     drush_log($error, 'error');
   }
   else {
@@ -87,13 +88,21 @@ function drush_hook_update_deploy_tools_site_deploy_init($directory_path = '../c
     $destination = drush_normalize_path($destination);
     if (is_dir($destination)) {
       // Make the directory site_deploy.
-      $made_dir = drush_mkdir("{$destination}/site_deploy", TRUE);
+      $made_dir = drush_mkdir("{$destination}/{$module_name}", TRUE);
       if ($made_dir) {
+        $files = array(
+          // Source filename => Destination filename.
+          'comp.json' => 'composer.json',
+          'info.yml' => "{$module_name}.info.yml",
+          'install.php' => "{$module_name}.install",
+          'module.php' => "{$module_name}.module",
+          'post_update.php' => "{$module_name}.post_update.php",
+        );
         // Move the files.
-        drush_copy_dir("{$boilerplate_dir}/info.txt", "{$destination}/site_deploy/site_deploy.info", FILE_EXISTS_ABORT);
-        drush_copy_dir("{$boilerplate_dir}/install.php", "{$destination}/site_deploy/site_deploy.install", FILE_EXISTS_ABORT);
-        drush_copy_dir("{$boilerplate_dir}/module.php", "{$destination}/site_deploy/site_deploy.module", FILE_EXISTS_ABORT);
-        $success = dt("The module 'site_deploy' was created at '!location'", array('!location' => $destination));
+        foreach ($files as $src => $dest) {
+          drush_copy_dir("{$boilerplate_dir}/{$src}", "{$destination}/{$module_name}/{$dest}", FILE_EXISTS_ABORT);
+        }
+        $success = dt("The module '@name' was created at '!location'", array('@name' => $module_name, '!location' => $destination));
         drush_log($success, 'success');
       }
 
