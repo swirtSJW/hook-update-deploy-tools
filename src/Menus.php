@@ -21,12 +21,12 @@ class Menus {
     $menus = (array) $menus;
     self::canUseMenuImport();
     $t = get_t();
-    $menu_feature = check_plain(variable_get('hook_update_deploy_tools_menu_feature', ''));
-    $menu_feature_uri = drupal_get_path('module', $menu_feature);
+    $menu_feature_storage_uri = HudtInternal::getStoragePath('menu');
     foreach ($menus as $mid => $menu_machine_name) {
-      $menu_uri = "{$menu_feature_uri}/menu_source/{$menu_machine_name}-export.txt";
+      $filename = "{$menu_machine_name}-export.txt";
+      $menu_uri = "{$menu_feature_storage_uri}{$filename}";
 
-      if (file_exists($menu_uri)) {
+      if (HudtInternal::canReadFile($filename, 'menu')) {
         // Import the menu w/ 'remove menu items' and 'link to content' options.
         $results = menu_import_file($menu_uri, $menu_machine_name,
           array('link_to_content' => TRUE, 'remove_menu_items' => TRUE)
@@ -69,16 +69,6 @@ class Menus {
           Message::make($message, $variables, WATCHDOG_ERROR, 1, $link);
         }
       }
-      else {
-        // Menu import file missing.
-        $variables = array(
-          '@error' => $error,
-          '@menu_machine_name' => $menu_machine_name,
-          '@menu_uri' => $menu_uri,
-        );
-        $message = "\nUPDATE FAILED: The requested menu import '@menu_machine_name' failed because the requested file '@menu_uri' was not found. Re-run update when the file has been placed there.";
-        Message::make($message, $variables, WATCHDOG_ERROR);
-      }
       menu_cache_clear($menu_machine_name);
     }
     $done = $t('Menu imports complete');
@@ -96,7 +86,6 @@ class Menus {
    */
   private static function canUseMenuImport() {
     if (!module_exists('menu_import')) {
-      $t = get_t();
       // menu_import is not enabled on this site, so this this is unuseable.
       $message = 'Menu import denied because menu_import is not enabled on this site.';
       $variables = array();
