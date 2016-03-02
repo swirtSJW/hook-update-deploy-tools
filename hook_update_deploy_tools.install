@@ -30,7 +30,10 @@ function hook_update_deploy_tools_disable() {
  * Implements hook_uninstall().
  */
 function hook_update_deploy_tools_uninstall() {
-  variable_del('hook_update_deploy_tools_menu_feature');
+  $storage_vars = HookUpdateDeployTools\HudtInternal::getStorageVars();
+  foreach ($storage_vars as $storage_var) {
+    variable_del($storage_var);
+  }
 
   drupal_set_message(t('hook_update_deploy_tools has been uninstalled.'));
 }

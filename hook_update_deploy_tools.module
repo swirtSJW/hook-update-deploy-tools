@@ -49,13 +49,33 @@ function hook_update_deploy_tools_menu() {
 function hook_update_deploy_tools_admin() {
   $form = array();
 
+  $default_deploy = check_plain(variable_get('hook_update_deploy_tools_deploy_module', ''));
+  $description = t("This is the machine name for the custom deploy module for the site. example: site_deploy");
+  if (empty($default_deploy)) {
+    $vars = array('%drush' => 'drush site-deploy-init');
+    $description .= '</br>' . t("You currently have no deploy module declared.  Run '%drush' to create one.", $vars);
+  }
+  $form['hook_update_deploy_tools_deploy_module'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of the custom deploy module for this site.'),
+    '#default_value' => $default_deploy,
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => $description,
+    '#required' => FALSE,
+  );
+
+  $description = t("This is the machine name for the Feature controlling the menus. example: my_menu_feature.") . '</br>';
+  $description .= t("This determines where Menu import files must reside.") . '</br>';
+  $path = HookUpdateDeployTools\HudtInternal::getStoragePath('menu', TRUE);
+  $description .= t("Currently using: %path", array('%path' => $path));
   $form['hook_update_deploy_tools_menu_feature'] = array(
     '#type' => 'textfield',
-    '#title' => t('Machine name of menu Feature'),
+    '#title' => t('Machine name of menu Feature or custom deploy module'),
     '#default_value' => check_plain(variable_get('hook_update_deploy_tools_menu_feature', '')),
     '#size' => 60,
     '#maxlength' => 60,
-    '#description' => t("This is the machine name for the Feature controlling the menus. example: my_menu_feature"),
+    '#description' => $description,
     '#required' => FALSE,
   );
 
