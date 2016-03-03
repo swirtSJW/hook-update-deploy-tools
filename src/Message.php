@@ -70,6 +70,7 @@ class Message {
     $wd_type_giberish = array(
       // Bad type => Good type.
       'call_user_func_array' => 'hook_update_deploy_tools',
+      'eval' => 'hook_update_deploy_tools',
       'site_deploy_install' => 'site_deploy',
     );
     $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;

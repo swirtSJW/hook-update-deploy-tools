@@ -168,9 +168,48 @@ class HudtInternal {
       'default' => 'hook_update_deploy_tools_deploy_module',
       'menu' => 'hook_update_deploy_tools_menu_feature',
       'node' => 'hook_update_deploy_tools_node_feature',
-      'panel' => 'hook_update_deploy_tools_panels_feature',
-      'rule' => 'hook_update_deploy_tools_rules_feature',
+      'panels' => 'hook_update_deploy_tools_panels_feature',
+      'rules' => 'hook_update_deploy_tools_rules_feature',
     );
     return $storage_map;
+  }
+
+
+  /**
+   * Normalizes a machine name to be underscores and removes file appendage.
+   *
+   * @param string $quasi_machinename
+   *   An machine name with hyphens or a export file name to be normalized.
+   *
+   * @return string
+   *   A string resembling a machine name with underscores.
+   */
+  public static function normalizeMachineName($quasi_machinename) {
+    $items = array(
+      '-export.txt' => '',
+      '-' => '_',
+    );
+    $machine_name = str_replace(array_keys($items), array_values($items), $quasi_machinename);
+    return $machine_name;
+  }
+
+
+  /**
+   * Normalizes a machine  or file name to be the filename.
+   *
+   * @param string $quasi_name
+   *   An machine name or a export file name to be normalized.
+   *
+   * @return string
+   *   A string resembling a filename with hyphens and -export.txt.
+   */
+  public static function normalizeFileName($quasi_name) {
+    $items = array(
+      '-export.txt' => '',
+      '_' => '-',
+    );
+    $file_name = str_replace(array_keys($items), array_values($items), $quasi_name);
+    $file_name = "{$file_name}-export.txt";
+    return $file_name;
   }
 }

@@ -79,5 +79,19 @@ function hook_update_deploy_tools_admin() {
     '#required' => FALSE,
   );
 
+  $description = t("This is the machine name for the Feature controlling the Rules. example: my_rules_feature.") . '</br>';
+  $description .= t("This determines where Rules import files must reside.") . '</br>';
+  $path = HookUpdateDeployTools\HudtInternal::getStoragePath('rules', TRUE);
+  $description .= t("Currently using: %path", array('%path' => $path));
+  $form['hook_update_deploy_tools_rules_feature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of Rule Feature or custom deploy module'),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_rule_feature', '')),
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => $description,
+    '#required' => FALSE,
+  );
+
   return system_settings_form($form);
 }
