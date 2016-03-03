@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * HookUpdateDeployTools\Message .
+ */
 
 namespace HookUpdateDeployTools;
 use Drupal\Core\Logger\RfcLogLevel;
@@ -65,6 +69,16 @@ class Message {
     }
     // Try to determine the module caller to pass to Logger.
     $wd_type = (empty($called_by)) ? 'hook_update_deploy_tools' : current(explode('_update_', $called_by));
+
+    // Clean the watchdog of any types that are known nonsense from backtrace.
+    $wd_type_giberish = array(
+      // Bad type => Good type.
+      'call_user_func_array' => 'hook_update_deploy_tools',
+      'eval' => 'hook_update_deploy_tools',
+      'site_deploy_install' => 'site_deploy',
+    );
+    $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;
+
     // t() might not be available at .install.
     $t = get_t();
     $fail_header = (($severity <= RfcLogLevel::ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
