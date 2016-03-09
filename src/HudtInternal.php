@@ -13,6 +13,52 @@ namespace HookUpdateDeployTools;
 class HudtInternal {
 
   /**
+   * Evaluates if a function can be used.
+   *
+   * @param string $function_name
+   *   The name of a function.
+   *
+   * @return bool
+   *   TRUE if the function can be called.
+   *
+   * @throws \Exception if the function does not exist.
+   */
+  public static function canCall($function_name) {
+    if (!empty($function_name) && function_exists($function_name)) {
+      return TRUE;
+    }
+    else {
+      $t = get_t();
+      $message = $t("The function '@name' does not exist and can not be used.", array('@name' => $function_name));
+      throw new \Exception($message, WATCHDOG_ERROR);
+    }
+  }
+
+
+  /**
+   * Evaluates if a module can be used.
+   *
+   * @param string $module_name
+   *   The machine name of a module.
+   *
+   * @return bool
+   *   TRUE if the module exists.
+   *
+   * @throws \Exception if the module does not exist.
+   */
+  public static function canUse($module_name) {
+    if (!empty($module_name) && module_exists($module_name)) {
+      return TRUE;
+    }
+    else {
+      $t = get_t();
+      $message = $t("The module '@name' does not exist and can not be used.", array('@name' => $module_name));
+      throw new \Exception($message, WATCHDOG_ERROR);
+    }
+  }
+
+
+  /**
    * Checks to see if a storagefile can be read.
    *
    * @param string $filename
