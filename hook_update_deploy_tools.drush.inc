@@ -37,6 +37,20 @@ function hook_update_deploy_tools_drush_command() {
     'aliases' => array('site-deploy-export-rule', 'hook-update-deploy-tools-export-rule'),
   );
 
+  $items['site-deploy-export'] = array(
+    'description' => dt("Exports an exportable to an export file, saved in location defined in hook_update_deploy_tools config"),
+    'arguments' => array(
+      'exportable' => dt('The name type of thing to export.  Example: Rules'),
+      'rule-name' => dt('The machine name of the exportable item.  Example: rules_rule_name'),
+    ),
+    'options' => array(),
+    'examples' => array(
+      'drush site-deploy-export Rules rules_rule_name' => dt('Creates the export of rule "!path"', array('!path' => 'rules_rule_name')),
+    ),
+    'scope' => 'site',
+    'aliases' => array('site-deploy-export', 'hook-update-deploy-tools-export'),
+  );
+
   return $items;
 }
 
@@ -56,15 +70,15 @@ function hook_update_deploy_tools_drush_help($section) {
     case 'meta:site-deploy:summary':
       return dt("Assists in making a custom deploy module for this site.");
 
-    case 'drush:site-deploy-export-rule':
-      return dt("Exports a Rule to an export file in a location defined by hook_update_deploy_tools config.");
+    case 'drush:site-deploy-export':
+      return dt("Exports an exportable to an export file in a location defined by hook_update_deploy_tools config.");
 
     // The 'title' meta is used to name a group of commands in `drush help`.
-    case 'meta:drush:site-deploy-export-rule:title':
-      return dt("Commands for exporting rules.");
+    case 'meta:drush:site-deploy-export:title':
+      return dt("Command for exporting an exportable to a file.");
 
     // The 'summary' meta item is displayed in `drush help --filter`.
-    case 'meta:site-deploy-export-rule:summary':
+    case 'meta:site-deploy-export:summary':
       return dt("Exports rules for this site.");
   }
 }
@@ -129,71 +143,62 @@ function drush_hook_update_deploy_tools_site_deploy_init($directory_path = '../c
   }
 }
 
+
+/**
+ * Drush command to export anything that implements the ExportInterface.
+ *
+ * @param string $type
+ *   The type of thing to export Rules, Menus... must match HUDT class name.
+ * @param string $machine_name
+ *   The machine name or unique identifier of the item to export.
+ */
+function drush_hook_update_deploy_tools_site_deploy_export($type, $machine_name) {
+  try {
+    $msg = array();
+    // Check to see if the class exists.
+    $class = '\HookUpdateDeployTools\\' . $type;
+    \HookUpdateDeployTools\Check::classExists($class);
+    // Check that we are dealing with an exportable type (an ExportInterface).
+    $implements = class_implements($class);
+    if ((is_array($implements)) && in_array('HookUpdateDeployTools\ExportInterface', $implements)) {
+      // Check that we have what it needs to export.
+      $class::canExport();
+      // It can export so can safely proceed.
+      $msg = dt('Exported') . ": [$machine_name] => " . $class::export($machine_name);
+    }
+    else {
+      // It does not implement ExportInterface.  Throw an exception.
+      $msg = '\HookUpdateDeployTools\@type does not implement ExportInterface so this command can not be called.';
+      $vars = array('@type' => $type);
+      throw new \HookUpdateDeployTools\HudtException($msg, $vars, WATCHDOG_ERROR, FALSE);
+    };
+  }
+  catch (\Exception $e) {
+    // Any errors from this drush command do not need to be watchdog logged.
+    $e->logIt = FALSE;
+    $vars = array(
+      '@error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
+    );
+
+    $msg = dt("site-deploy-export Caught exception:  @error", $vars);
+    drush_log($msg, 'error');
+    // Clear out the $msg so it is not duplicated in the return.
+    $msg = '';
+  }
+
+  return $msg;
+}
+
 /**
  * Drush command to export a Rule.
+ *
+ * @deprecated since version 7.x-1.11
+ *   Use drush site-deploy-export Rules RULE_MACHINE_NAME instead.
+ *   This is just a legacy wrapper now.
  *
  * @param string $rule_name
  *   The machine name of the rule to export.
  */
 function drush_hook_update_deploy_tools_site_deploy_export_rule($rule_name = '') {
-  if (!empty($rule_name)) {
-    // Determine location and filename.
-    $path = HookUpdateDeployTools\HudtInternal::getStoragePath('rules');
-    $machine_name = HookUpdateDeployTools\HudtInternal::normalizeMachineName($rule_name);
-    $file_name = HookUpdateDeployTools\HudtInternal::normalizeFileName($rule_name);
-    $file_uri = DRUPAL_ROOT . '/' . $path . $file_name;
-
-    // Load the rule if it exists.
-    if (module_exists('rules') && function_exists('rules_config_load')) {
-      $rule = rules_config_load($machine_name);
-      if (!empty($rule)) {
-        // It exists, so export it.
-        $export_contents = $rule->export();
-        // Save the file.
-        try {
-          $fh = fopen($file_uri, 'w');
-          if ($fh) {
-            fwrite($fh, $export_contents);
-            fclose($fh);
-            $vars = array(
-              '@machine_name' => $machine_name,
-              '@file_uri' => $file_uri,
-            );
-            $msg = dt("The Rule @machine_name import file was created or updated here: @file_uri", $vars);
-            drush_log($msg, 'success');
-          }
-          else {
-            $vars = array(
-              '@file_uri' => $file_uri,
-            );
-            $msg = dt("Error (likely permissions) creating the file: @file_uri", $vars);
-            drush_log($msg, 'error');
-          }
-        }
-        catch (Exception $e) {
-          $vars = array(
-            '@file_uri' => $file_uri,
-            '@error' => $e->getMessage(),
-          );
-          $msg = dt("Failed writing to @file_uri.  Caught exception:  @error", $vars);
-          drush_log($msg, 'error');
-          // Output file to terminal so it is available to use.
-          drush_print("The Rule file was not generated. Outputting Rule to terminal.\n\n");
-          drush_print($export_contents);
-        }
-      }
-      else {
-        // Could not be loaded, so nothign to export.  Error gracefully.
-        $vars = array(
-          '@machine_name' => $machine_name,
-        );
-        $msg = dt("The Rule '@machine_name' could not be loaded.  Please check the spelling of the machine name you are trying to export", $vars);
-        drush_log($msg, 'error');
-      }
-    }
-    else {
-      // Rules does not exist.  Error out gracefully.
-      drush_log('The module "Rules" is not enabled.  There is nothing to export.', 'error');
-    }
-  }
+  return drush_hook_update_deploy_tools_site_deploy_export('Rules', $rule_name);
 }

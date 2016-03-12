@@ -35,7 +35,7 @@ class Nodes {
    * @return string
    *   Messsage indicating the field has been changed
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function modifySimpleFieldValue($nid, $field, $value) {
@@ -79,6 +79,7 @@ class Nodes {
           $message = "The field '!fieldname' does not exist on the node !nid so it could not be altered.";
           $variables = array('!fieldname' => $field, '!nid' => $nid);
           Message::make($message, $variables, WATCHDOG_ERROR);
+          throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
         }
       }
       else {
@@ -86,6 +87,7 @@ class Nodes {
         $message = "The node '!nid' does not exist, so can not be updated.";
         $variables = array('!nid' => $nid);
         Message::make($message, $variables, WATCHDOG_ERROR);
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
       }
     }
     else {
@@ -93,6 +95,7 @@ class Nodes {
       $message = "The field '!fieldname' is not a simple field and can not be changed by the method ::modifySimpleFieldValue.";
       $variables = array('!fieldname' => $field);
       Message::make($message, $variables, WATCHDOG_ERROR);
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
   }
 }

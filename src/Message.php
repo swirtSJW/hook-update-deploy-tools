@@ -22,7 +22,7 @@ class Message {
    *   translate.
    * @param int $severity
    *   The severity of the message; one of the following values as defined by
-   *   watchdog.  WATCHDOG_ERROR and up throws a notice and fails the update.
+   *   watchdog.
    *   - WATCHDOG_EMERGENCY: Emergency, system is unusable.
    *   - WATCHDOG_ALERT: Alert, action must be taken immediately.
    *   - WATCHDOG_CRITICAL: Critical conditions.
@@ -42,10 +42,6 @@ class Message {
    *     drush.
    *   - Returns the full message if run by update.php so Drupal can handle the
    *     message.
-   *
-   * @throws DrupalUpdateException
-   *   Exception thrown fails update if watchdog level is WATCHDOG_ERROR,
-   *   WATCHDOG_CRITICAL, WATCHDOG_ALERT, or WATCHDOG_EMERGENCY
    */
   public static function make($message, $variables = array(), $severity = WATCHDOG_NOTICE, $indent = 1, $link = NULL) {
     $variables = self::stringifyValues($variables);
@@ -72,6 +68,8 @@ class Message {
       'call_user_func_array' => 'hook_update_deploy_tools',
       'eval' => 'hook_update_deploy_tools',
       'site_deploy_install' => 'site_deploy',
+      'HookUpdateDeployTools\Menus' => $trace[3]['function'],
+      'HookUpdateDeployTools\Rules' => $trace[3]['function'],
     );
     $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;
     // t() might not be available at .install.
@@ -93,10 +91,7 @@ class Message {
       // Being run by update.php so translate and return.
       $return_message = $t($message, $variables) . " \n";
     }
-    // Error or more serious? Fail the hook_update_N.
-    if (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) {
-      throw new \DrupalUpdateException("{$fail_header}{$wd_type}: {$formatted_message}");
-    }
+
     return (!empty($return_message)) ? "{$fail_header}{$wd_type}: {$return_message}" : '';
   }
 

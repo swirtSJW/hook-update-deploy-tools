@@ -29,71 +29,76 @@ class Features {
    */
   public static function revert($features) {
     $features = (array) $features;
-    self::canUseFeatures();
+    $completed = array();
+    $message = '';
+    $total_requested = count($features);
     $t = get_t();
-    // See if the feature needs to be reverted.
-    foreach ($features as $key => $feature_name) {
-      if (module_exists($feature_name)) {
-        // Check the status of each feature.
-        if (self::isOverridden($feature_name)) {
-          // It is overridden.  Attempt revert.
-          $message = "Reverting: @feature_name.";
-          $variables = array('@feature_name' => $feature_name);
-          Message::make($message, $variables, WATCHDOG_INFO);
-          features_revert_module($feature_name);
-          // Now check to see if it actually reverted.
+
+    try {
+      Check::canUse('features');
+      // See if the feature needs to be reverted.
+      foreach ($features as $key => $feature_name) {
+        if (module_exists($feature_name)) {
+          // Check the status of each feature.
           if (self::isOverridden($feature_name)) {
-            $message = '! Feature @feature_name remains overridden after being reverted.  Check for issues.';
-            global $base_url;
-            $link = $base_url . '/admin/structure/features';
+            // It is overridden.  Attempt revert.
+            $message = "Reverting: @feature_name.";
             $variables = array('@feature_name' => $feature_name);
-            $message = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+            Message::make($message, $variables, WATCHDOG_INFO);
+            features_revert_module($feature_name);
+            // Now check to see if it actually reverted.
+            if (self::isOverridden($feature_name)) {
+              $message = 'Feature @feature_name remains overridden after being reverted.  Check for issues.';
+              global $base_url;
+              $link = $base_url . '/admin/structure/features';
+              $variables = array('@feature_name' => $feature_name);
+              $message_out = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+            }
+            else {
+              $message = "Reverted @feature_name successfully.";
+              $variables = array('@feature_name' => $feature_name);
+              $message_out = Message::make($message, $variables, WATCHDOG_INFO);
+            }
           }
           else {
-            $message = "Reverted @feature_name successfully.";
+            // Not overridden, no revert required.
+            $message = "Revert request for @feature_name was skipped because it is not currently overridden.";
             $variables = array('@feature_name' => $feature_name);
-            $message = Message::make($message, $variables, WATCHDOG_INFO);
+            $message_out = Message::make($message, $variables, WATCHDOG_INFO);
           }
         }
         else {
-          // Not overridden, no revert required.
-          $message = "Revert request for @feature_name was skipped because it is not currently overridden.";
+          // Feature does not exist.  Throw exception.
+          $message = "The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.";
           $variables = array('@feature_name' => $feature_name);
-          $message = Message::make($message, $variables, WATCHDOG_INFO);
+          Message::make($message, $variables, WATCHDOG_ERROR);
+          throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
         }
-      }
-      else {
-        // Feature does not exist.  Throw exception.
-        $message = "The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.";
-        $variables = array('@feature_name' => $feature_name);
-        Message::make($message, $variables, WATCHDOG_ERROR);
+        $completed[$feature_name] = $message;
       }
     }
-    $message = Message::make('The requested reverts were processed successfully.', array(), WATCHDOG_INFO);
+    catch(\Exception $e) {
+      $vars = array(
+        '!error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
+      );
+      if (!method_exists($e, 'logMessage')) {
+        // Not logged yet, so log it.
+        $message = 'Feature revert denied because: !error';
+        Message::make($message, $vars, WATCHDOG_ERROR);
+      }
+
+      // Output a summary before shutting this down.
+      $done = HudtInternal::getImportSummary($completed, $total_requested);
+      Message::make($done, array(), FALSE, 1);
+
+      throw new \DrupalUpdateException($t('Caught Exception: Update aborted!  !error', $vars));
+    }
+
+    $done = HudtInternal::getImportSummary($completed, $total_requested);
+    $message = Message::make('The requested reverts were processed successfully. !done', array('!done' => $done), WATCHDOG_INFO);
     return $message;
   }
 
-  /**
-   * Checks to see if Features in enabled.
-   *
-   * @throws \DrupalUpdateException
-   *   Exception thrown if Features is not enabled.
-   *
-   * @return bool
-   *   TRUE if enabled.
-   */
-  private static function canUseFeatures() {
-    if (!module_exists('features')) {
-      $t = get_t();
-      // Features is not enabled on this site, so this this class is unuseable.
-      $message = "Revert request denied because Features is not enabled on this site.";
-      $variables = array();
-      Message::make($message, array(), WATCHDOG_ERROR);
-    }
-    else {
-      return TRUE;
-    }
-  }
 
   /**
    * Checks to see if a feature is overridden.

@@ -315,7 +315,7 @@ Look up the machine name of your Rule in the Rule UI.
 Then go to your terminal and type
 
 ```
-drush site-deploy-export-rule MACHINE_NAME_OF_RULE
+drush site-deploy-export Rules rule MACHINE_NAME_OF_RULE
 ```
 Feedback from the drush command will tell you where the file has been created,
 or if there were any issues.
@@ -394,8 +394,7 @@ Add something like this to a hook_update_N in your custom module.install.
   // Optional Watchdog style variables array. Arrays or Objects are welcome
   // variable values.
   $variables = array('!count' => count($some_array_i_built)));
-  // Optional Watchdog level.  If WATCHDOG ERROR or more serious, it will throw
-  // an exception and fail the hook_update. If FALSE, it will output the message
+  // Optional Watchdog level. If FALSE, it will output the message
   // but not log it to watchdog. (Default: WATCHDOG_NOTICE)
   $watchdog_level = WATCHDOG_WARNING
   // Optional value to indent the message. (Default: 1)
@@ -405,6 +404,15 @@ Add something like this to a hook_update_N in your custom module.install.
   $return .=  HookUpdateDeployTools\Message::make($msg, $variables, $watchdog_level, $indent, $link);
 
   return $return;
+
+```
+If you are logging something as WATCHDOG_ERROR or more serious, you should
+immediately follow that with an Exception to declare the update a failure.
+
+```php
+
+// Throw an exception to declare this hook_update_N a failure.
+throw new HookUpdateDeployTools\HudtException($msg, $variables, WATCHDOG_ERROR, FALSE);
 
 ```
 
