@@ -19,48 +19,46 @@ class Paths {
    * @return string
    *   Messsage indicating success.  Failure messages come from Watchdog.
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function modifyAlias($original_alias, $new_alias, $language) {
-    $return = self::checkSame($original_alias, $new_alias);
-    if (empty($return)) {
-      // They are not the same. Proceed.
-      $alias = self::getAliasObject($original_alias, $new_alias, $language);
-      if (self::checkAliasesExist($alias)) {
-        // Made it this far without exception, clear for change.
-        $return = self::changeAlias($alias);
+    try {
+      $return = self::checkSame($original_alias, $new_alias);
+      if (empty($return)) {
+        // They are not the same. Proceed.
+        $alias = self::getAliasObject($original_alias, $new_alias, $language);
+        if (self::checkAliasesExist($alias)) {
+          // Made it this far without exception, clear for change.
+          $return = self::changeAlias($alias);
+        }
       }
+      return $return;
     }
-    return $return;
+    catch (\Exception $e) {
+      $vars = array(
+        '!error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
+        '@file' => $e->getFile(),
+        '@line' => $e->getLine(),
+      );
+      if (!method_exists($e, 'logMessage')) {
+        // Not logged yet, so log it.
+        $message = 'Paths::modifyAlias failed in "@file" on line @line.  Message: !error';
+        Message::make($message, $vars, WATCHDOG_ERROR);
+      }
+      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR);
+    }
   }
 
-  /**
-   * Checks to see if pathauto in enabled.
-   *
-   * @throws \DrupalUpdateException
-   *   Exception thrown if pathauto is not enabled.
-   *
-   * @return bool
-   *   TRUE if enabled.
-   */
-  private static function canUsePathauto() {
-    if (!module_exists('pathauto')) {
-      // menu_import is not enabled on this site, so this this is unuseable.
-      $message = 'Path operation denied because pathauto is not enabled on this site.';
-      $variables = array();
-      Message::make($message, $variables, WATCHDOG_ERROR);
-    }
-    else {
-      return TRUE;
-    }
-  }
 
   /**
    * Assuming all alias prechecks have passed, this method makes the save.
    *
    * @param object $alias
    *   The alias object for passing around
+   *
+   * @throws HudtException
+   *   Calls the update a failure, preventing it from registering the update_N.
    */
   private static function changeAlias($alias) {
     $alias->original->path = _pathauto_existing_alias_data($alias->original->source, $alias->original->language);
@@ -75,7 +73,7 @@ class Paths {
       // Original alias could not be loaded.  Blame language.
       $message = "The original alias of could not be loaded.  This is most likely due to specifying the wrong language in the call to modifyAlias. Adjust your update hook and try again.";
       Message::make($message, $variables, WATCHDOG_ERROR);
-      $return = FALSE;
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
     // Make the changes.
     $saved_alias = _pathauto_set_alias($alias->new->path, $alias->original->path);
@@ -89,7 +87,7 @@ class Paths {
       // For some reason the save failed.  Reason unknown.
       $message = "Alias save of '!new_alias' was not successful in replacing '!old_alias'. Sorry, unable to say why. Adjust your update hook and try again.";
       Message::make($message, $variables, WATCHDOG_ERROR);
-      $return = FALSE;
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
     return $return;
   }
@@ -100,10 +98,10 @@ class Paths {
    * @param string $original_alias
    *   The original alias.
    * @param string $new_alias
-   *   The new alias requested
+   *   The new alias requested.
    *
    * @return mixed
-   *   string message if they the same
+   *   string message if they are the same.
    *   bool FALSE if the are not the same.
    */
   private static function checkSame($original_alias, $new_alias) {
@@ -124,11 +122,13 @@ class Paths {
    * Checks to see if the aliases exist in an alterable combination.
    *
    * @param object $alias
-   *   An alias object containing $alias->original and $alias->new
+   *   An alias object containing $alias->original and $alias->new.
    *
    * @return bool
-   *   TRUE if alterable combination
-   *   FALSE if not an alterable combination (WATCHDOG ERRORs throw exception.)
+   *   TRUE if alterable combination.
+   *
+   * @throws HudtException
+   *   If not an alterable combination.
    */
   public static function checkAliasesExist($alias) {
     $variables = array('!original_alias' => $alias->original->alias, '!new_alias' => $alias->new->alias);
@@ -136,7 +136,7 @@ class Paths {
       // The original alias does not exist.
       $message = "Alias '!original_alias' does not exist so could not be altered, and '!new_alias' does not already exist.  Adjust your update hook and try again.";
       Message::make($message, $variables, WATCHDOG_ERROR);
-      $return = FALSE;
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
     elseif (empty($alias->original->source) && !empty($alias->new->source)) {
       // The original alias does not exist and the new one does.  Make the
@@ -151,7 +151,7 @@ class Paths {
       // Fail the update.
       $message = "'!new_alias' already exists and '!original_alias' does too.  The pre-existance of the new alias blocks the change.";
       Message::make($message, $variables, WATCHDOG_ERROR);
-      $return = FALSE;
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
     else {
       // This is the case where original alias is not empty and the new alias
@@ -176,19 +176,20 @@ class Paths {
    */
   private static function getAliasObject($original_alias, $new_alias, $language) {
     $alias = new \stdClass();
-    self::canUsePathauto();
+    Check::canUse('pathauto');
     $alias->original = new \stdClass();
     $alias->new = new \stdClass();
     $alias->original->alias = $original_alias;
     // Bring in the pathauto.inc file.
     module_load_include('inc', 'pathauto', 'pathauto');
+    Check::canCall('pathauto_clean_alias');
     $alias->new->alias = pathauto_clean_alias($new_alias);
     $alias->original->language = $language;
     $alias->new->language = $language;
     // Use the old alias to get the source (drupal system path).
-    $alias->original->source = drupal_lookup_path('source', $original_alias);
+    $alias->original->source = drupal_lookup_path('source', $original_alias, $language);
     // Build the new path only to see if it already exists.
-    $alias->new->source = drupal_lookup_path('source', $new_alias);
+    $alias->new->source = drupal_lookup_path('source', $new_alias, $language);
 
     return $alias;
   }

@@ -19,7 +19,7 @@ class Fields {
    * @return string
    *   A string message to return to the hook_update_N if no exceptions.
    *
-   * @throws DrupalUpdateException
+   * @throws HudtException
    *   Message throwing exception if criteria is deemed unfit to declare the
    *   update a success.
    */
@@ -46,6 +46,8 @@ class Fields {
         // Something went wrong, the instance still exists. Fail the update.
         $msg = 'The field instance for field:!field_name in bundle:!bundle_name in entity:!entity_type seems to still exist.';
         $return .= Message::make($msg, $msg_vars, WATCHDOG_ERROR, 1);
+        throw new HudtException($msg, $msg_vars, WATCHDOG_ERROR, FALSE);
+
       }
       else {
         // It worked.  The instance was removed.

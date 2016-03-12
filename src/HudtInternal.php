@@ -13,52 +13,6 @@ namespace HookUpdateDeployTools;
 class HudtInternal {
 
   /**
-   * Evaluates if a function can be used.
-   *
-   * @param string $function_name
-   *   The name of a function.
-   *
-   * @return bool
-   *   TRUE if the function can be called.
-   *
-   * @throws \Exception if the function does not exist.
-   */
-  public static function canCall($function_name) {
-    if (!empty($function_name) && function_exists($function_name)) {
-      return TRUE;
-    }
-    else {
-      $t = get_t();
-      $message = $t("The function '@name' does not exist and can not be used.", array('@name' => $function_name));
-      throw new \Exception($message, WATCHDOG_ERROR);
-    }
-  }
-
-
-  /**
-   * Evaluates if a module can be used.
-   *
-   * @param string $module_name
-   *   The machine name of a module.
-   *
-   * @return bool
-   *   TRUE if the module exists.
-   *
-   * @throws \Exception if the module does not exist.
-   */
-  public static function canUse($module_name) {
-    if (!empty($module_name) && module_exists($module_name)) {
-      return TRUE;
-    }
-    else {
-      $t = get_t();
-      $message = $t("The module '@name' does not exist and can not be used.", array('@name' => $module_name));
-      throw new \Exception($message, WATCHDOG_ERROR);
-    }
-  }
-
-
-  /**
    * Checks to see if a storagefile can be read.
    *
    * @param string $filename
@@ -68,11 +22,10 @@ class HudtInternal {
    *   The type of storage (menu, panel, rules...).
    *
    * @return bool
-   *   TRUE if the file can be read.  FALSE if it can not.  Throws and exception
-   *   through Message::make().
+   *   TRUE if the file can be read.
    *
-   * @throws DrupalUpdateException
-   *   Via Message::make().
+   * @throws HudtException
+   *   When the file can not be read.
    */
   public static function canReadFile($filename, $storage_type) {
     $path = self::getStoragePath($storage_type);
@@ -90,8 +43,7 @@ class HudtInternal {
       );
       $message = "The requested !storage read failed because the file '!filename' was not found in '@path'. \nRe-run update when the file has been placed there and is readable.";
       Message::make($message, $variables, WATCHDOG_ERROR);
-      // Should not get here due to Message::make() throwing an exception.
-      return FALSE;
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
   }
 
@@ -148,6 +100,29 @@ class HudtInternal {
   }
 
   /**
+   * Generate the import summary.
+   *
+   * @param array $completed
+   *   Array of completed imports.
+   * @param int $total_requested
+   *   The number to be processed.
+   *
+   * @return string
+   *   The report of what was completed.
+   */
+  public static function getImportSummary($completed, $total_requested) {
+    $t = get_t();
+    $count = count($completed);
+    $vars = array(
+      '@count' => $count,
+      '!completed' => print_r($completed, TRUE),
+      '@total' => $total_requested,
+    );
+
+    return $t("Summary: Imported @count/@total.  Completed the following:\n !completed", $vars);
+  }
+
+  /**
    * Gets the path for where import files are stored for a given storage type.
    *
    * @param string $storage_type
@@ -155,14 +130,18 @@ class HudtInternal {
    *
    * @param bool $safe_check
    *   Determines whether getting the path should be safe:
-   *   - FALSE (default) :  An update hook exception will be thrown if no path.
+   *   - FALSE (default) :  An \Exception will be thrown if no path.
    *   - TRUE : No exception will be thrown and message will be returned.
    *
    * @return string
    *   The path to the storage module for the storage type.
+   *
+   * @throws HudtException
+   *   If the path is not available and it is not a $safe_check
    */
   public static function getStoragePath($storage_type, $safe_check = FALSE) {
     $var_storage = self::getStorageVars();
+    $t = get_t();
     if (!empty($var_storage[$storage_type])) {
       // Storage is known.  Look for specific storage module.
       $storage_module  = variable_get($var_storage[$storage_type], '');
@@ -178,18 +157,17 @@ class HudtInternal {
         return $storage_path;
       }
       elseif ($safe_check) {
-        $t = get_t();
         return $t('The module "@module" does not exits, please add it or adjust accordingly.', array('@module' => $storage_module));
       }
       else {
         // Storage module does not exist, throw exception, fail update.
-        $msg = "The storage module '%module'  does not exist. Visit !path to set the correct module for !storage import.";
-        $vars = array(
+        $variables = array(
           '!path' => '/admin/config/development/hook_update_deploy_tools',
           '!storage' => $storage_type,
           '%module' => $storage_module,
         );
-        Message::make($msg, $vars, WATCHDOG_ERROR, 1);
+        $message = "The storage module '%module'  does not exist. Visit !path to set the correct module for !storage import.";
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
       }
     }
     else {
@@ -257,5 +235,53 @@ class HudtInternal {
     $file_name = str_replace(array_keys($items), array_values($items), $quasi_name);
     $file_name = "{$file_name}-export.txt";
     return $file_name;
+  }
+
+
+  /**
+   * Writes a file to a path with contents.
+   *
+   * @param string $file_uri
+   *   The full root path to the contents and the filename with extension.
+   * @param string $file_contents
+   *   The contents of the file.
+   *
+   * @return mixed
+   *   string of the path is writing was successful.
+   *   FALSE if otherwise.
+   *
+   * @throws \Exception
+   *   If writing is unsuccessful an Exception is thrown and caught.
+   */
+  public static function writeFile($file_uri, $file_contents) {
+    $variables = array(
+      '@file_uri' => $file_uri,
+    );
+    $msg_return = FALSE;
+    try {
+      $fh = fopen($file_uri, 'w');
+      if ($fh) {
+        fwrite($fh, $file_contents);
+        fclose($fh);
+        // Successful, so return the uri of the file.
+        $msg_return = $file_uri;
+      }
+      else {
+        $message = "Error (likely permissions) creating the file: @file_uri";
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
+      }
+    }
+    catch (\Exception $e) {
+      $variables['@error'] = $e->getMessage();
+      $msg = dt("Failed writing to @file_uri.  Caught exception:  @error", $variables);
+      drush_log($msg, 'error');
+      // Output file to terminal so it is available to use.
+      drush_print(dt("The file was not generated. Outputting contents to terminal.\n"));
+      drush_print('------------------------------------------------------------');
+      drush_print($file_contents);
+      drush_print("------------------------------------------------------------\n\n");
+    }
+
+    return $msg_return;
   }
 }

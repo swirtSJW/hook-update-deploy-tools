@@ -12,15 +12,11 @@ class Settings {
    * @param string $name
    *   The name of the variable to set.
    * @param mixed $value
-   *   The value to set. This can be any PHP data type; variabel_set takes care
+   *   The value to set. This can be any PHP data type; variable_set takes care
    *   of serialization as necessary.
    *
    * @return string
    *   Message to report through hook_update_N.
-   *
-   * @throws \DrupalUpdateException
-   *   If variable does not remain set, calls the update a failure, preventing
-   *   it from registering the update_N.
    */
   public static function set($name, $value) {
     $original_value = variable_get($name, 'not set');
@@ -52,8 +48,11 @@ class Settings {
    *   The original value of the variable.
    *
    * @return string
-   *   String message if it was not set correctly. (Exception thrown by
-   *   Message:make if error.)
+   *   String message if it was not set correctly.
+   *
+   * @throws HudtException
+   *   If variable does not remain set, calls the update a failure, preventing
+   *   it from registering the update_N.
    */
   private static function confirmSet($name, $value, $original_value) {
     $variables = self::reloadVars();
@@ -74,7 +73,7 @@ class Settings {
         // There was no setting saved.  Fail update.
         $message = "The variable '!name' was not saved at all. It does not exist.";
         $return = Message::make($message, $msg_vars, WATCHDOG_ERROR, 1);
-        break;
+        throw new HudtException($message, $msg_vars, WATCHDOG_ERROR, FALSE);
 
       case ($saved_value == $value):
         // The save worked correctly.
@@ -94,7 +93,7 @@ class Settings {
         // The value did not match what was saved. Fail update.
         $message = "The variable '!name' did not correctly set to '!value'.  Value of !type:'!saved_value' found instead.  Most likely caused by a \$conf override in settings.php.";
         $return = Message::make($message, $msg_vars, WATCHDOG_ERROR, 1);
-        break;
+        throw new HudtException($message, $msg_vars, WATCHDOG_ERROR, FALSE);
     }
 
     return $return;

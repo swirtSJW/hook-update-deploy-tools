@@ -15,7 +15,7 @@ class Modules {
    * @return string
    *   Messsage indicating the modules are disabled
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function checkDisabled($modules = array()) {
@@ -29,13 +29,14 @@ class Modules {
         $message = 'The module @module was supposed to be disabled by this update, but was not. Please investigate the problem and re-run this update.';
         $variables = array('@module' => $module);
         Message::make($message, $variables, WATCHDOG_ERROR);
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
       }
     }
     $module_list = implode(', ', $modules);
 
     $message = "The modules @disabled are disabled.";
     $variables = array('@disabled' => $module_list);
-    return Message::make($message, $variables, WATCHDOG_INFO);;
+    return Message::make($message, $variables, WATCHDOG_INFO);
   }
 
   /**
@@ -47,7 +48,7 @@ class Modules {
    * @return string
    *   Messsage indicating the modules are enabled
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function checkEnabled($modules = array()) {
@@ -61,6 +62,7 @@ class Modules {
         $message = 'The module @module was supposed to be enabled by this update, but was not. Please investigate the problem and re-run this update.';
         $variables = array('@module' => $module);
         Message::make($message, $variables, WATCHDOG_ERROR);
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
       }
     }
     $module_list = implode(', ', $modules);
@@ -80,7 +82,7 @@ class Modules {
    * @return string
    *   Messsage indicating the modules are enabled.
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function enable($modules = array()) {
@@ -93,6 +95,7 @@ class Modules {
       $message = 'The requested modules @modules to be enabled by this update, were not, because one of them does not exist in the codebase. Please investigate the problem and re-run this update.';
       $variables = array('@modules' => $module_list);
       Message::make($message, $variables, WATCHDOG_ERROR);
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
     $success = self::checkEnabled($modules);
 
@@ -108,9 +111,6 @@ class Modules {
    *
    * @return string
    *   Messsage indicating the modules are disabled.
-   *
-   * @throws \DrupalUpdateException
-   *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function disable($modules = array()) {
     $modules = (array) $modules;
@@ -132,7 +132,7 @@ class Modules {
    * @return string
    *   Messsage indicating the modules are uninstalled.
    *
-   * @throws \DrupalUpdateException
+   * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function uninstall($modules = array()) {
@@ -144,6 +144,7 @@ class Modules {
         // The module is not disabled, so it can not be uninstalled.
         $variables = array('@module' => $module);
         Message::make($message, $variables, WATCHDOG_ERROR);
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
       }
     }
     // Made it this far.Safe to uninstall.
@@ -163,6 +164,7 @@ class Modules {
       $message = "The modules @uninstalled were NOT uninstalled successfully.  Check to see that the modules you are attempting to uninstall include any dependents in the correct order.";
       $variables = array('@uninstalled' => $module_list);
       Message::make($message, $variables, WATCHDOG_ERROR);
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }
   }
 
@@ -174,9 +176,6 @@ class Modules {
    *
    * @return string
    *   Messsage indicating the modules are disabled and uninstalled.
-   *
-   * @throws \DrupalUpdateException
-   *   Calls the update a failure, preventing it from registering the update_N.
    */
   public static function disableAndUninstall($modules = array()) {
     $modules = (array) $modules;

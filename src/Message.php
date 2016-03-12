@@ -76,6 +76,8 @@ class Message {
       'call_user_func_array' => 'hook_update_deploy_tools',
       'eval' => 'hook_update_deploy_tools',
       'site_deploy_install' => 'site_deploy',
+      'HookUpdateDeployTools\Menus' => $trace[3]['function'],
+      'HookUpdateDeployTools\Rules' => $trace[3]['function'],
     );
     $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;
 
@@ -103,7 +105,7 @@ class Message {
     if (($severity <= RfcLogLevel::ERROR) && $severity !== FALSE) {
       throw new \DrupalUpdateException("{$fail_header}{$called_by}: {$formatted_message}");
     }
-    return (!empty($return_message)) ? "{$fail_header}{$called_by}: {$return_message}" : '';
+    return (!empty($return_message)) ? "{$fail_header}{$wd_type}: {$return_message}" : '';
   }
 
 
