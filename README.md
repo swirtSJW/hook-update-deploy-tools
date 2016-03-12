@@ -81,7 +81,7 @@ that will handle sitewide deployment.
 * Navigate to /admin/config/development/hook_update_deploy_tools and enter the
   name of your site's custom deploy module.
 * If you have other Feature(s) that would be a better location for import files
-  for menus and rules, add those as well.  These is only needed if you will be
+  for menus and rules, add those as well.  This is only needed if you will be
   using Hook Update Deploy Tools to import your menus  or rules.
 
 ## <a name="methods"></a>Method / Uses
@@ -315,7 +315,7 @@ Look up the machine name of your Rule in the Rule UI.
 Then go to your terminal and type
 
 ```
-drush site-deploy-export Rules rule MACHINE_NAME_OF_RULE
+drush site-deploy-export Rules MACHINE_NAME_OF_RULE
 ```
 Feedback from the drush command will tell you where the file has been created,
 or if there were any issues.
