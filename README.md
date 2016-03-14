@@ -19,6 +19,7 @@ CONTENTS OF THIS FILE
     * <a href="#update-alias">Updating Alias</a>
     * <a href="#variables">Setting Drupal Variables</a>
     * <a href="#messages">Hook Update Messages</a>
+    * <a href="#lookup-set">Check and Change Last Run hook_update_N</a>
  * <a href="#bonus">Bonus Features</a>
  * <a href="#maintainers">Maintainers</a>
 
@@ -417,6 +418,28 @@ throw new HookUpdateDeployTools\HudtException($msg, $variables, WATCHDOG_ERROR, 
 ```
 
 -------------------------------------------
+<a name="lookup-set">Lookup or set last run hook_update_n</a>
+
+In developing hook_updates_N's it is often necessary know what the last run
+update is on a server.
+
+```
+drush site-deploy-n-lookup MODULE_NAME
+```
+
+Sometimes locally it is necessary to keep running the same hook_update_N
+locally, until you get it right.  These two commands can be helpful for
+development use locally.
+
+```
+// Sets the N to whatever it was, minus 1. It's a 'rollback'.
+drush site-deploy-n-set MODULE_NAME
+
+// Sets the N for the module to 7032
+drush site-deploy-n-set MODULE_NAME 7032
+```
+
+-------------------------------------------
 
 ## <a name="bonus"></a>BONUS
 
@@ -431,3 +454,6 @@ improve the experience:
 ## <a name="maintainers"></a>MAINTAINERS
 
 * Steve Wirt (swirt) - https://www.drupal.org/u/swirt
+
+The repository for this site is available on Drupal.org or 
+https://github.com/swirtSJW/hook-update-deploy-tools
