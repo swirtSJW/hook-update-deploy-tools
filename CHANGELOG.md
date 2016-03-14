@@ -8,6 +8,10 @@ $e->logMessage;
 * Abstracted Drush command to export anything that implements ExportInterface.
 * Wrapped most big actions in try catch to better handle errors.
 * Added CHANGELOG.md and populated it.
+* Added drush commands to get the last hook_update_n and to set the last N.
+    drush site-deploy-n-lookup MODULE_NAME
+    drush site-deploy-n-set MODULE_NAME  (reduces the number of the last update)
+    drush site-deploy-n-set MODULE_NAME 7034 (sets the last run N to 7034)
 
 
 hook_update_deploy_tools 7.x-1.10 March 3, 2016

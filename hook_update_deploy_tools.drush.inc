@@ -24,31 +24,49 @@ function hook_update_deploy_tools_drush_command() {
     'aliases' => array('site-deploy-init', 'hook-update-deploy-tools-init'),
   );
 
-  $items['site-deploy-export-rule'] = array(
-    'description' => dt("Exports a rule to an export file, saved in location defined in hook_update_deploy_tools config"),
-    'arguments' => array(
-      'rule-name' => dt('The machine name of the rule to export.  Example: rules_rule_name'),
-    ),
-    'options' => array(),
-    'examples' => array(
-      'drush site-deploy-export-rule rules_rule_name' => dt('Creates the export of rule "!path"', array('!path' => 'rules_rule_name')),
-    ),
-    'scope' => 'site',
-    'aliases' => array('site-deploy-export-rule', 'hook-update-deploy-tools-export-rule'),
-  );
-
   $items['site-deploy-export'] = array(
     'description' => dt("Exports an exportable to an export file, saved in location defined in hook_update_deploy_tools config"),
     'arguments' => array(
       'exportable' => dt('The name type of thing to export.  Example: Rules'),
       'rule-name' => dt('The machine name of the exportable item.  Example: rules_rule_name'),
     ),
+    'required-arguments' => TRUE,
     'options' => array(),
     'examples' => array(
       'drush site-deploy-export Rules rules_rule_name' => dt('Creates the export of rule "!path"', array('!path' => 'rules_rule_name')),
     ),
     'scope' => 'site',
     'aliases' => array('site-deploy-export', 'hook-update-deploy-tools-export'),
+  );
+
+  $items['site-deploy-n-lookup'] = array(
+    'description' => dt("Returns the update_n number for a given module"),
+    'arguments' => array(
+      'module-name' => dt("The machine name of the module's update to lookup."),
+    ),
+    'required-arguments' => TRUE,
+    'options' => array(),
+    'examples' => array(
+      'drush site-deploy-n-lookup MY_MODULE' => dt('Returns the last run hook_update_N for the module "!module".', array('!module' => 'MY_MODULE')),
+    ),
+    'scope' => 'site',
+    'aliases' => array('site-deploy-n-lookup'),
+  );
+
+  $items['site-deploy-n-set'] = array(
+    'description' => dt("Rollsback a module's last run number back one.  WARNING! Use only for development."),
+    'arguments' => array(
+      'module-name' => dt("The machine name of the module's update to rollback."),
+      'set-to' => dt("The number of the update to set back to."),
+    ),
+    'required-arguments' => 1,
+    'options' => array(),
+    'examples' => array(
+      'drush site-deploy-n-set MY_MODULE' => dt('Alters the system setting for the "!module" hook_update_n to be one less than it was.', array('!module' => 'MY_MODULE')),
+      'drush site-deploy-n-set MY_MODULE 7005' => dt('Sets the current update number for  "!module" to 7005', array('!module' => 'MY_MODULE')),
+    ),
+    'scope' => 'site',
+    'aliases' => array('site-deploy-n-set'),
   );
 
   return $items;
@@ -79,14 +97,36 @@ function hook_update_deploy_tools_drush_help($section) {
 
     // The 'summary' meta item is displayed in `drush help --filter`.
     case 'meta:site-deploy-export:summary':
-      return dt("Exports rules for this site.");
+      return dt("Exports any exportable for this site.");
+
+    case 'drush:site-deploy-n-lookup':
+      return dt("Looks up the last run number for hook_update_N for a module.");
+
+    // The 'title' meta is used to name a group of commands in `drush help`.
+    case 'meta:drush:site-deploy-n-lookup:title':
+      return dt("Command for the last run number for hook_update_N for a module.");
+
+    // The 'summary' meta item is displayed in `drush help --filter`.
+    case 'meta:site-deploy-n-lookup:summary':
+      return dt("Get the last run number for hook_update_N for a module.");
+
+    case 'drush:site-deploy-n-set':
+      return dt("Looks up the last run number for hook_update_N for a module and reduces it by one.");
+
+    // The 'title' meta is used to name a group of commands in `drush help`.
+    case 'meta:drush:site-deploy-n-set:title':
+      return dt("Command for the last run number for hook_update_N for a module to be rolled back one.");
+
+    // The 'summary' meta item is displayed in `drush help --filter`.
+    case 'meta:site-deploy-n-set:summary':
+      return dt("Set the last run number for hook_update_N for a module to the one before it.");
   }
 }
 
 /**
  * Implements drush_hook_COMMAND_validate().
  */
-function hook_update_deploy_tools_site_deploy_init_validate() {
+function drush_hook_update_deploy_tools_site_deploy_init_validate() {
   if (drush_is_windows()) {
     // $name = drush_get_username();
     // TODO: implement check for elevated process using w32api
@@ -189,16 +229,123 @@ function drush_hook_update_deploy_tools_site_deploy_export($type, $machine_name)
   return $msg;
 }
 
+
 /**
- * Drush command to export a Rule.
+ * Returns the last run update hook number N for a module.
  *
- * @deprecated since version 7.x-1.11
- *   Use drush site-deploy-export Rules RULE_MACHINE_NAME instead.
- *   This is just a legacy wrapper now.
+ * @param string $module_name
+ *   Machine name for the module to lookup.
  *
- * @param string $rule_name
- *   The machine name of the rule to export.
+ * @return mixed
+ *   bool FALSE if there was no N found.
+ *   int N that was found.
  */
-function drush_hook_update_deploy_tools_site_deploy_export_rule($rule_name = '') {
-  return drush_hook_update_deploy_tools_site_deploy_export('Rules', $rule_name);
+function drush_hook_update_deploy_tools_site_deploy_n_lookup($module_name) {
+  if (!empty($module_name)) {
+    $vars = array(
+      ':module' => $module_name,
+    );
+    $result = db_query('SELECT schema_version FROM system WHERE name = :module', $vars);
+    $record = $result->fetchAssoc();
+    $vars['@module'] = $module_name;
+    if (!empty($record['schema_version'])) {
+      $vars['!number'] = $record['schema_version'];
+
+      $message = dt("@module: Last run hook_update_N = !number", $vars);
+      drush_log($message, 'success');
+      return $record['schema_version'];
+    }
+    else {
+      // Module schema is not present.
+      $message = dt("@module: had no update N registered.  Is it enabled?", $vars);
+      drush_log($message, 'error');
+      return FALSE;
+    }
+  }
+  else {
+    // Sorry the module_name can't be empty.\
+    $message = dt("A module's machine_name must be specified.", $vars);
+    drush_log($message, 'error');
+    return FALSE;
+  }
+}
+
+
+/**
+ * Implements drush_hook_COMMAND_validate().
+ */
+function drush_hook_update_deploy_tools_site_deploy_n_set_validate($module_name, $set_to = FALSE) {
+  // $set_to must be a number and not more than 4 characters.
+  if (!empty($set_to)) {
+    $lowest_version = floor(VERSION) * 1000;
+    $highest_version = $lowest_version + 999;
+    switch (TRUE) {
+      // First evaluate to TRUE wins.
+      case (!is_numeric($set_to)):
+        drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt("The argument 'set_to' must be a number. ex: 7023"));
+        break;
+
+      case (strlen((string) $set_to) !== 4):
+        drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt("The argument 'set_to' must be a 4 digit number. ex: 7023"));
+        break;
+
+      case ($set_to < $lowest_version):
+        drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt("For this site, the argument 'set_to' can not be less than !number.", array('!number' => $lowest_version)));
+        break;
+
+      case ($set_to > $highest_version):
+        drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt("For this site, the argument 'set_to' can not be more than !number.", array('!number' => $highest_version)));
+        break;
+    }
+  }
+}
+
+
+/**
+ * Set the update_N for a module.
+ *
+ * @param string $module_name
+ *   Machine name for the module to set.
+ * @param int $set_to
+ *   (optional) the number of the _update_N to set.  If left blank it will set
+ *   it to the current value -1.
+ */
+function drush_hook_update_deploy_tools_site_deploy_n_set($module_name, $set_to = FALSE) {
+  $hook_n = drush_hook_update_deploy_tools_site_deploy_n_lookup($module_name);
+  $vars = array(
+    '!hook_n' => $hook_n,
+    '@module' => $module_name,
+  );
+  if (!empty($hook_n)) {
+    $lowest_version = floor(VERSION) * 1000;
+    $highest_version = $lowest_version + 999;
+    $set_to = (!empty($set_to)) ? $set_to : $hook_n - 1;
+    $vars['!set_to'] = $set_to;
+    // All other testing was done by site-deploy_n_lookup and _validate so go.
+    if (($set_to >= $lowest_version) && ($set_to <= $highest_version)) {
+      $num_updated = db_update('system')
+        ->expression('schema_version', $set_to)
+        ->condition('name', $module_name)
+        ->execute();
+      $vars['!num_updated'] = $num_updated;
+      if ($num_updated === 1) {
+        $message = dt("@module: Last run hook_update_N was set from !hook_n to !set_to", $vars);
+        drush_log($message, 'success');
+      }
+      else {
+        $message = dt("@module: db_update returned !num_updated  set from !hook_n to !set_to. Should only have been 1.", $vars);
+        drush_log($message, 'error');
+      }
+    }
+    else {
+      // Can not be set to a value that goes outside the current drupal version.
+      $message = dt("@module: was at !hook_n and could not be set to !set_to because it would change versions.", $vars);
+      drush_log($message, 'error');
+    }
+  }
+  else {
+    // There is no module to set the update_N on..
+    $message = dt("There is nothing to set because @module has no recorded value..", $vars);
+    drush_log($message, 'error');
+  }
 }
