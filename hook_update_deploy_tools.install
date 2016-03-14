@@ -30,6 +30,9 @@ function hook_update_deploy_tools_disable() {
  * Implements hook_uninstall().
  */
 function hook_update_deploy_tools_uninstall() {
+  // Need to include this file because the autoloader is shutdown when the
+  // the module was disabled.
+  require_once 'src/HudtInternal.php';
   $storage_vars = HookUpdateDeployTools\HudtInternal::getStorageVars();
   foreach ($storage_vars as $storage_var) {
     variable_del($storage_var);

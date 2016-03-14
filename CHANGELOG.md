@@ -1,5 +1,13 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* 
+
+
+
+hook_update_deploy_tools 7.x-1.11 March 14, 2016
+------------------------------------------------
+* Fixed bug that did not allow hook_update_deploy_tools to be uninstalled.
+https://www.drupal.org/node/2687161
 * Removed Exception throwing from Message::make().
 * Add HudtException class that optionally handles logging on catch by calling
 $e->logMessage;
