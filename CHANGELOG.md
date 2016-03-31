@@ -1,8 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* README cleanup.
 
 
-hook_update_deploy_tools 7.x-1.2 March 31, 2016
+hook_update_deploy_tools 7.x-1.12 March 31, 2016
 -----------------------------------------------
 * Added PageManager page export and import.
 https://www.drupal.org/node/2619258
