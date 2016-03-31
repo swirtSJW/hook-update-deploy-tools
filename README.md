@@ -263,7 +263,7 @@ of the menu Feature. Though for true deployment, this value should be assigned
 through a hook_update_N using
 
 ```php
-  variable_set('hook_update_deploy_tools_menu_feature', '<menu_feature_machine_name>');
+  $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_menu_feature', 'MENU_FEATURE_MACHINE_NAME');
 ```
 
 When you are ready to import a menu, add this to a hook_update_N in your menu
@@ -295,7 +295,7 @@ Though for true deployment, this value should be assigned
 through a hook_update_N using
 
 ```php
-  variable_set('hook_update_deploy_tools_page_manager_feature', '<feature_machine_name>');
+  $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_page_manager_feature', 'PAGE_MANAGER_FEATURE_MACHINE_NAME');
 ```
 
 When you are ready to import a page, add this to a hook_update_N in your Page
@@ -348,7 +348,7 @@ Though for true deployment, this value should be assigned
 through a hook_update_N using
 
 ```php
-  variable_set('hook_update_deploy_tools_rules_feature', '<rules_feature_machine_name>');
+  $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_rules_feature', 'RULES_FEATURE_MACHINE_NAME');
 ```
 
 When you are ready to import a Rule, add this to a hook_update_N in your menu
