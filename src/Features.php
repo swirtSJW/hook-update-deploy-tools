@@ -33,12 +33,12 @@ class Features {
       Check::canUse('features');
       // See if the feature needs to be reverted.
       foreach ($features as $key => $feature_name) {
+        $variables = array('@feature_name' => $feature_name);
         if (module_exists($feature_name)) {
           // Check the status of each feature.
           if (self::isOverridden($feature_name)) {
             // It is overridden.  Attempt revert.
             $message = "Reverting: @feature_name.";
-            $variables = array('@feature_name' => $feature_name);
             Message::make($message, $variables, WATCHDOG_INFO);
             features_revert_module($feature_name);
             // Now check to see if it actually reverted.
@@ -46,30 +46,26 @@ class Features {
               $message = 'Feature @feature_name remains overridden after being reverted.  Check for issues.';
               global $base_url;
               $link = $base_url . '/admin/structure/features';
-              $variables = array('@feature_name' => $feature_name);
               $message_out = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
             }
             else {
               $message = "Reverted @feature_name successfully.";
-              $variables = array('@feature_name' => $feature_name);
               $message_out = Message::make($message, $variables, WATCHDOG_INFO);
             }
           }
           else {
             // Not overridden, no revert required.
             $message = "Revert request for @feature_name was skipped because it is not currently overridden.";
-            $variables = array('@feature_name' => $feature_name);
             $message_out = Message::make($message, $variables, WATCHDOG_INFO);
           }
         }
         else {
           // Feature does not exist.  Throw exception.
           $message = "The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.";
-          $variables = array('@feature_name' => $feature_name);
           Message::make($message, $variables, WATCHDOG_ERROR);
           throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
         }
-        $completed[$feature_name] = $message;
+        $completed[$feature_name] = format_string($message, $variables);
       }
     }
     catch(\Exception $e) {
