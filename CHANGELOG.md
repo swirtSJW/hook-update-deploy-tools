@@ -1,5 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Fix summary message variables in Features::revert.
 * README cleanup.
 
 
