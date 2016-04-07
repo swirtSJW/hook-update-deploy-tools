@@ -264,10 +264,9 @@ class PageManager implements ImportInterface, ExportInterface {
       self::canExport();
       // Load the page_manager page if it exists.
       $page = page_manager_page_load($machine_name);
-      $handlers = ctools_export_load_object('page_manager_handlers', 'names', array("page_{$machine_name}__panel"));
-      $handler = !empty($handlers[$machine_name]) ? $handlers[$machine_name] : NULL;
+      $handlers = page_manager_load_task_handlers(page_manager_get_task('page'), $machine_name);
 
-      if (!empty($handlers)  && !empty($page)) {
+      if (!empty($page)) {
         // It exists, so export it.
         $export_contents = page_manager_page_export($page, $handlers);
 

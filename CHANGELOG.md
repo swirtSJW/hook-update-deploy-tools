@@ -1,5 +1,10 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+
+hook_update_deploy_tools 7.x-1.13 April 6, 2016
+-----------------------------------------------
+* Fix too narrow look for Page manager handlers on export.
 * Fix summary message variables in Features::revert.
 * README cleanup.
 
