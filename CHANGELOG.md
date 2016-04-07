@@ -1,6 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
-
+* Add check for page_manager_load_task_handlers to canExport.
 
 hook_update_deploy_tools 7.x-1.13 April 6, 2016
 -----------------------------------------------
