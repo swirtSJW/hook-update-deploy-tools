@@ -36,6 +36,8 @@ class Features {
 
     try {
       Check::canUse('features');
+      // Pick up new files that may have been added to existing Features.
+      features_include(TRUE);
       // See if the feature needs to be reverted.
       foreach ($features as $key => $feature_name) {
         $variables = array('@feature_name' => $feature_name);
