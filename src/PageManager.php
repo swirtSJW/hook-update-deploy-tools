@@ -233,11 +233,11 @@ class PageManager implements ImportInterface, ExportInterface {
    */
   public static function canExport() {
     Check::canUse('ctools');
-    Check::canCall('ctools_export_load_object');
 
     Check::canUse('page_manager');
     ctools_include('page', 'page_manager', 'plugins/tasks');
     Check::canCall('page_manager_page_load');
+    Check::canCall('page_manager_load_task_handlers');
     Check::canCall('page_manager_page_export');
 
     return TRUE;
