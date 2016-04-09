@@ -7,14 +7,16 @@ namespace HookUpdateDeployTools;
  */
 class Features {
   /**
-   * Safely reverts an array of Features and provides feedback.
+   * Safely revert an array of Features and provide feedback.
    *
    * The safety steps include:
    * a) Making sure the Feature exists (is enabled).
-   * b) Checks to see if the Feature requires reversion (is overridden)
+   * b) Checks to see if the Feature is overridden.
    *
-   * @param array $features
-   *   An array of features to be reverted, in order. (also accepts string)
+   * @param string[]|string $feature_names
+   *   One or more features or feature.component pairs. (in order)
+   * @param bool $force
+   *   Force revert even if Features assumes components' state are default.
    *
    * @return string
    *   Messsage indicating progress of feature reversions.
@@ -22,11 +24,11 @@ class Features {
    * @throws \DrupalUpdateException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function revert($features) {
-    $features = (array) $features;
+  public static function revert($feature_names, $force = FALSE) {
+    $feature_names = (array) $feature_names;
     $completed = array();
     $message = '';
-    $total_requested = count($features);
+    $total_requested = count($feature_names);
     $t = get_t();
 
     try {
@@ -34,7 +36,7 @@ class Features {
       // Pick up new files that may have been added to existing Features.
       features_include(TRUE);
       // See if the feature needs to be reverted.
-      foreach ($features as $key => $feature_name) {
+      foreach ($feature_names as $key => $feature_name) {
         $variables = array('@feature_name' => $feature_name);
         if (module_exists($feature_name)) {
           // Check the status of each feature.
@@ -94,7 +96,7 @@ class Features {
 
 
   /**
-   * Checks to see if a feature is overridden.
+   * Check to see if a feature is overridden.
    *
    * @param string $feature_name
    *   The machine name of the feature to check the status of.
