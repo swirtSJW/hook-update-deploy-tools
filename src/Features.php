@@ -33,42 +33,84 @@ class Features {
 
     try {
       Check::canUse('features');
+      module_load_include('inc', 'features', 'features.export');
+      // Check all functions that we plan to call are available.
+      // Exceptions are preferable to fatal errors.
+      Check::canCall('features_include');
+      Check::canCall('features_load_feature');
+      Check::canCall('features_hook');
       // Pick up new files that may have been added to existing Features.
       features_include(TRUE);
+      $feature_names = self::parseFeatureNames($feature_names);
       // See if the feature needs to be reverted.
-      foreach ($feature_names as $key => $feature_name) {
+      foreach ($feature_names as $feature_name => $components_needed) {
         $variables = array('@feature_name' => $feature_name);
-        if (module_exists($feature_name)) {
-          // Check the status of each feature.
-          if (self::isOverridden($feature_name)) {
-            // It is overridden.  Attempt revert.
-            $message = "Reverting: @feature_name.";
-            Message::make($message, $variables, WATCHDOG_INFO);
-            features_revert_module($feature_name);
-            // Now check to see if it actually reverted.
-            if (self::isOverridden($feature_name)) {
-              $message = 'Feature @feature_name remains overridden after being reverted.  Check for issues.';
-              global $base_url;
-              $link = $base_url . '/admin/structure/features';
-              $message_out = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+        if (Check::canUse($feature_name)&& ($feature = features_load_feature($feature_name, TRUE))) {
+
+          $components = array();
+          if ($force) {
+            // Forcefully revert all components of a feature.
+            foreach (array_keys($feature->info['features']) as $component) {
+              if (features_hook($component, 'features_revert')) {
+                $components[] = $component;
+
+              }
             }
-            else {
-              $message = "Reverted @feature_name successfully.";
-              $message_out = Message::make($message, $variables, WATCHDOG_INFO);
-            }
+            $message = "Reverting FORCE: @feature_name.";
           }
           else {
+            // Only revert components that are detected to be
+            // Overridden/Needs review/rebuildable.
+            $message = "Reverting: @feature_name.";
+            $states = features_get_component_states(array($feature->name), FALSE);
+            foreach ($states[$feature->name] as $component => $state) {
+              $revertable_states = array(
+                FEATURES_OVERRIDDEN,
+                FEATURES_NEEDS_REVIEW,
+                FEATURES_REBUILDABLE,
+              );
+              if (in_array($state, $revertable_states) && features_hook($component, 'features_revert')) {
+                $components[] = $component;
+              }
+            }
+          }
+
+          if (!empty($components_needed) && is_array($components_needed)) {
+            $components = array_intersect($components, $components_needed);
+          }
+
+          if (empty($components)) {
             // Not overridden, no revert required.
-            $message = "Revert request for @feature_name was skipped because it is not currently overridden.";
-            $message_out = Message::make($message, $variables, WATCHDOG_INFO);
+            $message = 'Revert @feature_name was skipped because it is not currently overridden.';
+          }
+          Message::make($message, $variables, WATCHDOG_INFO);
+
+          foreach ($components as $component) {
+            $variables['@component'] = $component;
+            if (features_feature_is_locked($feature_name, $component)) {
+              $message = 'Skipping locked @feature_name.@component.';
+              Message::make($message, $variables, WATCHDOG_INFO);
+              $completed[$feature_name] = format_string($message, $variables);
+            }
+            else {
+              features_revert(array($feature_name => array($component)));
+
+              // Now check to see if it actually reverted.
+              if (self::isOverridden($feature_name, $component)) {
+                $message = 'Feature @feature_name remains overridden after being reverted.  Check for issues.';
+                global $base_url;
+                $link = $base_url . '/admin/structure/features';
+                $message_out = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+              }
+              else {
+                $message = "Reverted @feature_name.@component successfully.";
+                $message_out = Message::make($message, $variables, WATCHDOG_INFO);
+              }
+
+            }
           }
         }
-        else {
-          // Feature does not exist.  Throw exception.
-          $message = "The request to revert '@feature_name' failed because it is not enabled on this site. Adjust your hook_update accordingly and re-run update.";
-          Message::make($message, $variables, WATCHDOG_ERROR);
-          throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
-        }
+
         $completed[$feature_name] = format_string($message, $variables);
       }
     }
@@ -96,61 +138,40 @@ class Features {
 
 
   /**
-   * Check to see if a feature is overridden.
+   * Check to see if a feature component is overridden.
    *
    * @param string $feature_name
    *   The machine name of the feature to check the status of.
+   * @param string $component_name
+   *   The name of the component being checked.
    *
    * @return bool
    *   - TRUE if overridden.
-   *   - FALSE if not overidden.
-   *   - NULL if not enabled / not found.
+   *   - FALSE if not overidden (at default).
    */
-  public static function isOverridden($feature_name) {
-    if (module_exists($feature_name)) {
-      // Get file not included during update.
-      module_load_include('inc', 'features', 'features.export');
-      // Refresh the Feature list so not cached.
-      // Rebuild the list of features includes.
-      features_include(TRUE);
-      // Need to include any new files.
-      features_include_defaults(NULL, TRUE);
-      // Check the status of the feature.
-      $status = self::uncachedFeaturesGetStorage($feature_name);
-      if ($status === FEATURES_DEFAULT) {
-        // Default.
-        return FALSE;
-      }
-      else {
-        // Overridden.
-        return TRUE;
-      }
-    }
-    else {
-      // Feature does not exist.
-      return NULL;
-    }
-  }
-
-  /**
-   * Gets the un-static_cached version of features_get_storage().
-   *
-   * @param string $feature_name
-   *   The machine name of the Feature to evaluate.
-   *
-   * @return int
-   *   The number of Feature components not in default.
-   */
-  private static function uncachedFeaturesGetStorage($feature_name) {
-    // Get component states, and array_diff against array(FEATURES_DEFAULT).
-    // If the returned array has any states that don't match FEATURES_DEFAULT,
-    // return the highest state.
+  public static function isOverridden($feature_name, $component_name) {
+    // Get file not included during update.
+    module_load_include('inc', 'features', 'features.export');
+    // Refresh the Feature list so not cached.
+    // Rebuild the list of features includes.
+    features_include(TRUE);
+    // Need to include any new files.
+    features_include_defaults(NULL, TRUE);
+    // Check the status of the feature component.
     $states = features_get_component_states(array($feature_name), FALSE, TRUE);
     self::fixLaggingFieldGroup($states);
-    $states = array_diff($states[$feature_name], array(FEATURES_DEFAULT));
-    $storage = !empty($states) ? max($states) : FEATURES_DEFAULT;
-    return $storage;
+    if ((!empty($states[$module][$component])) && ($states[$module][$component] !== FEATURES_DEFAULT)) {
+      // Default, not overidden.
+      $status = FEATURES_DEFAULT;
+    }
+    else {
+      // Overridden.
+      $status = TRUE;
+    }
+
+    return $status;
   }
+
 
   /**
    * FieldGroup is cached and shows as overridden immeditately after revert.
@@ -178,5 +199,44 @@ class Features {
         }
       }
     }
+  }
+
+  /**
+   * Parse requested feature names and components.
+   *
+   * @param array $feature_names
+   *   Array of feature names and/or feature names.component names
+   *
+   * @return array
+   *   Array structure of
+   *   array(
+   *     featurename => TRUE,
+   *     featurename2 => array(component1, component2...),
+   *   )
+   */
+  private static function parseFeatureNames($feature_names) {
+    // Parse list of feature names.
+    $modules = array();
+    foreach ($feature_names as $feature_name) {
+      $feature_name = explode('.', $feature_name);
+      $module = array_shift($feature_name);
+      $component = array_shift($feature_name);
+
+      if (isset($module)) {
+        if (empty($component)) {
+          // Just a feature name, we need all of it's components.
+          $modules[$module] = TRUE;
+        }
+        elseif ($modules[$module] !== TRUE) {
+          // Requested a component be reverted, build array in case of multiple.
+          if (!isset($modules[$module])) {
+            $modules[$module] = array();
+          }
+          $modules[$module][] = $component;
+        }
+      }
+    }
+
+    return $modules;
   }
 }
