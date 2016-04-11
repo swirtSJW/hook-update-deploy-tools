@@ -113,9 +113,14 @@ class HudtInternal {
   public static function getSummary($completed, $total_requested, $operation) {
     $t = get_t();
     $count = count($completed);
+    $completed_string = print_r($completed, TRUE);
+    $remove = array("Array", "(\n", ")\n");
+    $completed_string = str_replace($remove, '', $completed_string);
+    // Adjust for misaligned second line.
+    $completed_string = str_replace('             [', '     [', $completed_string);
     $vars = array(
       '@count' => $count,
-      '!completed' => print_r($completed, TRUE),
+      '!completed' => $completed_string,
       '@total' => $total_requested,
       '@operation' => $operation,
     );

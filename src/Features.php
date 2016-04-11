@@ -44,31 +44,35 @@ class Features {
       $feature_names = self::parseFeatureNames($feature_names);
       // See if the feature needs to be reverted.
       foreach ($feature_names as $feature_name => $components_needed) {
+        self::hasComponent($feature_name, $components_needed);
         $variables = array('@feature_name' => $feature_name);
-        if (Check::canUse($feature_name)&& ($feature = features_load_feature($feature_name, TRUE))) {
-
+        // If the Feature exists, process it.
+        if (Check::canUse($feature_name) && ($feature = features_load_feature($feature_name, TRUE))) {
           $components = array();
           if ($force) {
-            // Forcefully revert all components of a feature.
+            // Forcefully revert all components of the Feature.
+            // Gather the components to revert them all.
             foreach (array_keys($feature->info['features']) as $component) {
               if (features_hook($component, 'features_revert')) {
                 $components[] = $component;
-
               }
             }
-            $message = "Reverting FORCE: @feature_name.";
+            $message = "Revert (forced): @feature_name.";
+            Message::make($message, $variables, WATCHDOG_INFO, 2);
           }
           else {
             // Only revert components that are detected to be
-            // Overridden/Needs review/rebuildable.
-            $message = "Reverting: @feature_name.";
+            // Overridden || Needs review || Rebuildable.
+            $message = "Revert: @feature_name.";
             $states = features_get_component_states(array($feature->name), FALSE);
+            // Build list of components that can be reverted and need to be.
             foreach ($states[$feature->name] as $component => $state) {
               $revertable_states = array(
                 FEATURES_OVERRIDDEN,
                 FEATURES_NEEDS_REVIEW,
                 FEATURES_REBUILDABLE,
               );
+              // If they are revertable, add them to the list.
               if (in_array($state, $revertable_states) && features_hook($component, 'features_revert')) {
                 $components[] = $component;
               }
@@ -76,42 +80,52 @@ class Features {
           }
 
           if (!empty($components_needed) && is_array($components_needed)) {
+            // From list of components that need to be reverted, keep only the
+            // components that were requested.
             $components = array_intersect($components, $components_needed);
           }
 
           if (empty($components)) {
             // Not overridden, no revert required.
-            $message = 'Revert @feature_name was skipped because it is not currently overridden.';
+            $message = 'Skipped - not currently overridden.';
+            $completed[$feature_name] = $message;
           }
-          Message::make($message, $variables, WATCHDOG_INFO);
 
+          // Process the revert on each component.
           foreach ($components as $component) {
             $variables['@component'] = $component;
             if (features_feature_is_locked($feature_name, $component)) {
-              $message = 'Skipping locked @feature_name.@component.';
-              Message::make($message, $variables, WATCHDOG_INFO);
-              $completed[$feature_name] = format_string($message, $variables);
+              // Trying to revert a locked component should raise an exception,
+              // but it may have been caused by a blanket revert, so just raise
+              // a warning instead of failing the update.
+              $message = 'Revert @feature_name.@component: Skipped - locked.';
+              Message::make($message, $variables, WATCHDOG_WARNING);
+              $completed[$feature_name][$component] = 'Skipped - locked.';
             }
             else {
+              // Ok to proceed by reverting this component.
               features_revert(array($feature_name => array($component)));
 
               // Now check to see if it actually reverted.
               if (self::isOverridden($feature_name, $component)) {
-                $message = 'Feature @feature_name remains overridden after being reverted.  Check for issues.';
+                $message = '@feature_name.@component: Remains overridden. Check for issues.';
                 global $base_url;
                 $link = $base_url . '/admin/structure/features';
-                $message_out = Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+                Message::make($message, $variables, WATCHDOG_WARNING, 1, $link);
+                $message = "Overridden - Check for issues.";
               }
               else {
-                $message = "Reverted @feature_name.@component successfully.";
-                $message_out = Message::make($message, $variables, WATCHDOG_INFO);
+                // Not shown as overridden so most likely a success.
+                $message = "Success";
               }
-
+              $completed[$feature_name][$component] = format_string($message, $variables);
             }
           }
+          $variables['!completed'] = $completed[$feature_name];
+          // Log a message about the entire Feature.
+          $message = "Reverted @feature_name : !completed";
+          Message::make($message, $variables, WATCHDOG_INFO);
         }
-
-        $completed[$feature_name] = format_string($message, $variables);
       }
     }
     catch(\Exception $e) {
@@ -128,11 +142,11 @@ class Features {
       $done = HudtInternal::getSummary($completed, $total_requested, 'Reverted');
       Message::make($done, array(), FALSE, 1);
 
-      throw new \DrupalUpdateException($t('Caught Exception: Update aborted!  !error', $vars));
+      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
     }
-
+    // Log and output a summary of all the requests.
     $done = HudtInternal::getSummary($completed, $total_requested, 'Reverted');
-    $message = Message::make('The requested reverts were processed successfully. !done', array('!done' => $done), WATCHDOG_INFO);
+    $message = Message::make('The requested reverts were processed. !done', array('!done' => $done), WATCHDOG_INFO);
     return $message;
   }
 
@@ -160,7 +174,8 @@ class Features {
     // Check the status of the feature component.
     $states = features_get_component_states(array($feature_name), FALSE, TRUE);
     self::fixLaggingFieldGroup($states);
-    if ((!empty($states[$module][$component])) && ($states[$module][$component] !== FEATURES_DEFAULT)) {
+
+    if (empty($states[$module][$component])) {
       // Default, not overidden.
       $status = FEATURES_DEFAULT;
     }
@@ -170,6 +185,39 @@ class Features {
     }
 
     return $status;
+  }
+
+  /**
+   * Check that a specific component exists in the Feature.
+   *
+   * @param string $feature_name
+   *   The machine name of the Feature.
+   * @param array $components
+   *   The name of the component.
+   *
+   * @return bool
+   *   TRUE if the Feature has the component.
+   *
+   * @throws HudtException
+   *   If the Feature does not have the component.
+   */
+  public static function hasComponent($feature_name, $components) {
+    $states = features_get_component_states(array($feature_name), FALSE, TRUE);
+    if (is_array($components)) {
+      foreach ($components as $component_name) {
+        if (!isset($states[$feature_name][$component_name])) {
+          // The component does not exist in this Feature.  Throw an exception.
+          $message = 'The feature @feature has no component of @component.';
+          $variables = array(
+            '@feature' => $feature_name,
+            '@component' => $component_name,
+          );
+          throw new HudtException($message, $variables, WATCHDOG_ERROR);
+        }
+      }
+    }
+    // The component exists.
+    return TRUE;
   }
 
 
