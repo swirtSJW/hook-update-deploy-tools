@@ -1,8 +1,16 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+
+hook_update_deploy_tools 7.x-1.14 April 11, 2016
+-----------------------------------------------
+* Add support for Force reverting Features and reverting specific components.
+https://www.drupal.org/node/2647148
+* Improved reporting of Features revert operations.
 * Add call to features_include(TRUE) to pick up newly added files.
   https://www.drupal.org/node/2667268
 * Add check for page_manager_load_task_handlers to canExport.
+
 
 hook_update_deploy_tools 7.x-1.13 April 6, 2016
 -----------------------------------------------

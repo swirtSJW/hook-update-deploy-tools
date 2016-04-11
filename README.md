@@ -11,7 +11,7 @@ CONTENTS OF THIS FILE
     * <a href="#installation">Create a custom site_deploy module</a>
     * <a href="#enable">Enabling modules</a>
     * <a href="#disable">Disabling and Uninstalling modules</a>
-    * <a href="#revert">Reverting Features</a>
+    * <a href="#revert">Reverting Features or Feature Components</a>
     * <a href="#field-delete">Deleting Fields</a>
     * <a href="#import-menu">Importing Menus</a>
     * <a href="#import-page-manager-page">Importing Page Manager page</a> and <a href="#export-page-manager-page">Exporting Page Manager page</a>
@@ -197,19 +197,19 @@ function my_custom_deploy_update_7004() {
  */
 function custom_basic_page_update_7002() {
   $features = array(
-    'custom_basic_page',
+    'FEATURE_NAME',
   );
   $message = HookUpdateDeployTools\Features::revert($features);
   return $message;
 }
 ```
 
-In the odd situation where you need one feature to revert other features in
+In the odd situation where you need to revert features in
 some particular order, you can add them to the $features array in order.
 
-In the even more odd situation where you need to do some operation inbetween
-reverting one feature an another, you can use this example to concat the
-messages in to one.
+In the even more odd situation where you need to do some operation in between
+reverting one feature an another, you can use this example to concatinate the
+messages into one.
 
 ```php
 /**
@@ -229,6 +229,27 @@ function custom_basic_page_update_7002() {
 
   return $message;
 }
+```
+
+To revert only specific components of a Feature you can add the component name
+to the request like this:
+
+```php
+  $features = array(
+    'FEATURE_NAME.COMPONENT_NAME',
+  );
+  $message = HookUpdateDeployTools\Features::revert($features);
+```
+
+In rare cases where you need to force revert all components of a Feature even though
+they are not shown as overridden, you can add the optional second argument to the
+revert like this:
+
+```php
+  $features = array(
+    'FEATURE_NAME',
+  );
+  $message = HookUpdateDeployTools\Features::revert($features, TRUE);
 ```
 
 -------------------------------------------
