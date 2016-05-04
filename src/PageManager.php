@@ -28,7 +28,6 @@ class PageManager implements ImportInterface, ExportInterface {
     try {
       self::canImport();
 
-      $page_manager_feature_path = HudtInternal::getStoragePath('page_manager');
       foreach ($pages as $key => $page_manager_file_prefix) {
         $filename = HudtInternal::normalizeFileName($page_manager_file_prefix);
         $page_machine_name = HudtInternal::normalizeMachineName($page_manager_file_prefix);

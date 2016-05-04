@@ -200,6 +200,7 @@ class HudtInternal {
       'menu' => 'hook_update_deploy_tools_menu_feature',
       'node' => 'hook_update_deploy_tools_node_feature',
       'page_manager' => 'hook_update_deploy_tools_page_manager_feature',
+      'redirect' => 'hook_update_deploy_tools_redirect_feature',
       'rules' => 'hook_update_deploy_tools_rules_feature',
     );
     return $storage_map;

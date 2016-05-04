@@ -1,6 +1,11 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 
+hook_update_deploy_tools 7.x-1.15 May 4, 2016
+-----------------------------------------------
+* Add support for importing redirects from csv text files.
+  https://www.drupal.org/node/2717339
+
 
 hook_update_deploy_tools 7.x-1.14 April 11, 2016
 -----------------------------------------------
