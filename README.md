@@ -15,6 +15,7 @@ CONTENTS OF THIS FILE
     * <a href="#field-delete">Deleting Fields</a>
     * <a href="#import-menu">Importing Menus</a>
     * <a href="#import-page-manager-page">Importing Page Manager page</a> and <a href="#export-page-manager-page">Exporting Page Manager page</a>
+    * <a href="#import-redirects">Importing Redirects</a>
     * <a href="#import-rule">Importing Rules</a> and <a href="#export-rule">Exporting Rules</a>
     * <a href="#update-node">Updating Node Values</a>
     * <a href="#update-alias">Updating Alias</a>
@@ -351,6 +352,48 @@ or if there were any issues.
 
 -------------------------------------------
 
+###  <a name="import-redirects"></a>To Import a list of redirects Feature's .install
+
+Redirects can be imported from a text file that is a CSV following the pattern
+of old-path, newpath on each line of the file.
+https://www.drupal.org/project/redirect
+
+In order import Redirects on deployment, it is assumed/required that you have a
+Feature that controls redirects or a custom deploy module where the import files
+can reside. Within that Feature, add a directory 'redirect_source'.
+This is where you will place your Redirect import files.  The files will be named
+(filename-export.txt) You will also need to make Hook Update Deploy
+Tools aware of this custom menu Feature by going here
+/admin/config/development/hook_update_deploy_tools and entering the machine name
+of the Redirect Feature or let it default to your custom deploy module.
+Though for true deployment, this value should be assigned
+through a hook_update_N using
+
+```php
+  $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_redirect_feature', 'REDIRECT_FEATURE_MACHINE_NAME');
+```
+
+When you are ready to import a list of Redirects, add this to a hook_update_N in
+your redirect Feature
+
+```php
+  $message = HookUpdateDeployTools\Redirects::import('redirect-list-filename');
+  return $message;
+```
+
+or to do multiples
+
+```php
+  $redirect_lists = array('redirect-list-filename', 'redirect-list-other-filename');
+  $message = HookUpdateDeployTools\Redirects::import($redirect_lists);
+  return $message;
+```
+
+*Bonus* There is an admin UI to import a list of redirects by visiting
+/admin/config/search/redirect/hudt_import
+
+-------------------------------------------
+
 ###  <a name="import-rule"></a>To Import a Rule in a Feature's .install
 
 Rules can be imported from a text file that matches the standard output of
@@ -372,7 +415,7 @@ through a hook_update_N using
   $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_rules_feature', 'RULES_FEATURE_MACHINE_NAME');
 ```
 
-When you are ready to import a Rule, add this to a hook_update_N in your menu
+When you are ready to import a Rule, add this to a hook_update_N in your rules
 Feature
 
 ```php

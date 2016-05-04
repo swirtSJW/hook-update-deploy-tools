@@ -40,6 +40,18 @@ function hook_update_deploy_tools_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  if (module_exists('redirect')) {
+    $items['admin/config/search/redirect/hudt_import'] = array(
+      'title' => 'Import',
+      'description' => 'Import a csv list of redirects',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('hook_update_deploy_tools_redirect_import'),
+      'access arguments' => array('administer redirects'),
+      'type' => MENU_LOCAL_TASK,
+      'weight' => 50,
+    );
+  }
+
   return $items;
 }
 
@@ -93,6 +105,20 @@ function hook_update_deploy_tools_admin() {
     '#required' => FALSE,
   );
 
+  $description = t("This is the machine name for the Feature controlling the Redirects. example: my_redirects_feature.") . '</br>';
+  $description .= t("This determines where Redirect import files must reside.") . '</br>';
+  $path = HookUpdateDeployTools\HudtInternal::getStoragePath('redirect', TRUE);
+  $description .= t("Currently using: %path", array('%path' => $path));
+  $form['hook_update_deploy_tools_redirect_feature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of Redirect Feature or custom deploy module'),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_redirect_feature', '')),
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => $description,
+    '#required' => FALSE,
+  );
+
   $description = t("This is the machine name for the Feature controlling the Rules. example: my_rules_feature.") . '</br>';
   $description .= t("This determines where Rules import files must reside.") . '</br>';
   $path = HookUpdateDeployTools\HudtInternal::getStoragePath('rules', TRUE);
@@ -108,6 +134,28 @@ function hook_update_deploy_tools_admin() {
   );
 
   return system_settings_form($form);
+}
+
+/**
+ * Creates the redirect import form.
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function hook_update_deploy_tools_redirect_import() {
+  return HookUpdateDeployTools\Redirects::getImportForm();
+}
+
+/**
+ * Submit handler for the redirect import.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array by reference.
+ */
+function hook_update_deploy_tools_redirect_import_parse_form($form, &$form_state) {
+  HookUpdateDeployTools\Redirects::parseForm($form, $form_state);
 }
 
 
