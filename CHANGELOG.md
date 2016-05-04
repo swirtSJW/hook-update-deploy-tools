@@ -1,5 +1,7 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Remove unused variables in Redirect class.
+
 
 hook_update_deploy_tools 7.x-1.15 May 4, 2016
 -----------------------------------------------

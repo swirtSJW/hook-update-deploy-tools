@@ -37,12 +37,10 @@ class Redirects implements ImportInterface {
           // So verification will not be done on redirect imports.
           // Success assumed.
           $message = 'Redirects from: @machine_name - imported.';
-          global $base_url;
-          $link = "{$base_url}/{$result['page']->path}";
           $vars = array(
             '@machine_name' => $page_machine_name,
           );
-          Message::make($message, $vars, WATCHDOG_INFO, 1, $link);
+          Message::make($message, $vars, WATCHDOG_INFO, 1);
           $completed[$page_machine_name] = $t('Imported');
         }
       }
