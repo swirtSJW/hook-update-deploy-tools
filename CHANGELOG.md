@@ -1,5 +1,11 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+
+hook_update_deploy_tools 7.x-1.16 May 6, 2016
+-----------------------------------------------
+* Add method to enable/disable a View.
+  https://www.drupal.org/node/2720315
 * Remove unused variables in Redirect class.
 
 

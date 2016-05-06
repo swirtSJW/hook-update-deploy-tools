@@ -19,6 +19,7 @@ CONTENTS OF THIS FILE
     * <a href="#import-rule">Importing Rules</a> and <a href="#export-rule">Exporting Rules</a>
     * <a href="#update-node">Updating Node Values</a>
     * <a href="#update-alias">Updating Alias</a>
+    * <a href="#views">Enable and Disable a View</a>
     * <a href="#variables">Setting Drupal Variables</a>
     * <a href="#messages">Hook Update Messages</a>
     * <a href="#lookup-set">Check and Change Last Run hook_update_N</a>
@@ -477,6 +478,39 @@ Add this to a hook_update_N in your custom deploy module.install.
 This will attempt to alter the alias if the old_alias exists.  The language has
 to match the language of the original alias being modified (usually matches the
 node that it is assigned to).
+
+-------------------------------------------
+
+### <a name="views"></a>To enable/disable a View from an .install
+
+Add something like this to a hook_update_N in your custom deploy module.install
+to enable some Views.
+
+```php
+
+  $views = array(
+    'some_view_machine_name',
+    'another_view_machine_name'
+  );
+  $message =  HookUpdateDeployTools\Views::enable('$views');
+
+  return $message;
+
+```
+
+To disable some Views, it looks like this:
+
+```php
+
+  $views = array(
+    'some_view_machine_name',
+    'another_view_machine_name'
+  );
+  $message =  HookUpdateDeployTools\Views::disable('$views');
+
+  return $message;
+ 
+```
 
 -------------------------------------------
 
