@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Helper class to manage logging and commandline messaging during updates.
- */
 
 namespace HookUpdateDeployTools;
 use Drupal\Core\Logger\RfcLogLevel;

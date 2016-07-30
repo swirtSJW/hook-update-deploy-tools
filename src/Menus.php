@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare Menus class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare Nodes class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**
