@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare PageManager class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

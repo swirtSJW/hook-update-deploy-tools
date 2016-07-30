@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * HookUpdateDeployTools\Message .
- */
 
 namespace HookUpdateDeployTools;
 use Drupal\Core\Logger\RfcLogLevel;

@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Defines the iExport interface for exporting stuff from Drupal.
- */
 
 namespace HookUpdateDeployTools;
 

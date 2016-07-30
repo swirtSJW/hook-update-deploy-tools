@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare Rules class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

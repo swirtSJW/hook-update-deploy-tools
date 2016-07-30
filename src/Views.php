@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare Views class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

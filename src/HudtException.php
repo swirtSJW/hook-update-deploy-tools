@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Declares HudtException class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**
