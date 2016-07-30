@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * File to declare Check class.
- */
 
 namespace HookUpdateDeployTools;
 

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \HookUpdateDeployTools\Features.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

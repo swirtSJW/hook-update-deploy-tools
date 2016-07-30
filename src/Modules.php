@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare Modules class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**

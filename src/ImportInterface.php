@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Defines the iImport interface for importing stuff into Drupal.
- */
 
 namespace HookUpdateDeployTools;
 

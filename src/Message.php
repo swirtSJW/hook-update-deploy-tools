@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * Helper class to manage watchdog and commandline messaging during update.
- */
 
 namespace HookUpdateDeployTools;
 

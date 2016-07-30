@@ -1,5 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Issue #2774773: Remove @file tag docblock from all the namespaced .php files.
 * Remove unused variables in Redirect class.
 
 

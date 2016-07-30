@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * File to declare Settings class.
- */
 
 namespace HookUpdateDeployTools;
 

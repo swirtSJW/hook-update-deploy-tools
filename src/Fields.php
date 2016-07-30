@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * File to declare Fields class.
- */
 
 namespace HookUpdateDeployTools;
 

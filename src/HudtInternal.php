@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * File to declare HudInternal class.
- */
-
 namespace HookUpdateDeployTools;
 
 /**
