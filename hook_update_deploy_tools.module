@@ -91,6 +91,20 @@ function hook_update_deploy_tools_admin() {
     '#required' => FALSE,
   );
 
+  $description = t("This is the machine name for the Feature controlling the Nodes. example: my_nodes_feature.") . '</br>';
+  $description .= t("This determines where Node import files must reside.") . '</br>';
+  $path = HookUpdateDeployTools\HudtInternal::getStoragePath('node', TRUE);
+  $description .= t("Currently using: %path", array('%path' => $path));
+  $form['hook_update_deploy_tools_node_feature'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Machine name of Node Feature or custom deploy module'),
+    '#default_value' => check_plain(variable_get('hook_update_deploy_tools_node_feature', '')),
+    '#size' => 60,
+    '#maxlength' => 60,
+    '#description' => $description,
+    '#required' => FALSE,
+  );
+
   $description = t("This is the machine name for the Feature controlling the Panels. example: my_panels_feature.") . '</br>';
   $description .= t("This determines where Panels import files must reside.") . '</br>';
   $path = HookUpdateDeployTools\HudtInternal::getStoragePath('page_manager', TRUE);

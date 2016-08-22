@@ -104,4 +104,32 @@ class Check {
 
     return $return;
   }
+
+
+  /**
+   * A strict check for numeric.  Fails update if $value is !numeric.
+   *
+   * @param string $name
+   *   The name of a variable being checked for empty.
+   * @param mixed $value
+   *   The actual value of the variable being checked for empty.
+   *
+   * @return bool
+   *   TRUE if $value is numeric.
+   *
+   * @throws HudtException if it is !numeric.
+   */
+  public static function isNumeric($name, $value) {
+    if (is_numeric($value)) {
+      $return = TRUE;
+    }
+    else {
+      // This is strict, so make message and throw DrupalUpdateException.
+      $message = 'The value !name was not numeric. Could not proceed.';
+      $vars = array('!name' => $name);
+      throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+    }
+
+    return $return;
+  }
 }

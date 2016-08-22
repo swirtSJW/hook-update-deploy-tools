@@ -14,13 +14,14 @@ CONTENTS OF THIS FILE
     * <a href="#revert">Reverting Features or Feature Components</a>
     * <a href="#field-delete">Deleting Fields</a>
     * <a href="#import-menu">Importing Menus</a>
+    * <a href="#export-node">Exporting a node</a> and <a href="#import-node">Importing a Node</a>
     * <a href="#import-page-manager-page">Importing Page Manager page</a> and <a href="#export-page-manager-page">Exporting Page Manager page</a>
     * <a href="#import-redirects">Importing Redirects</a>
     * <a href="#import-rule">Importing Rules</a> and <a href="#export-rule">Exporting Rules</a>
     * <a href="#update-node">Updating Node Values</a>
     * <a href="#update-alias">Updating Alias</a>
     * <a href="#views">Enable and Disable a View</a>
-    * <a href="#variables">Setting Drupal Variables</a>
+    * <a href="#setting-variable">Setting Drupal Variables</a>
     * <a href="#messages">Hook Update Messages</a>
     * <a href="#lookup-set">Check and Change Last Run hook_update_N</a>
  * <a href="#bonus">Bonus Features</a>
@@ -299,6 +300,56 @@ Feature
 
 -------------------------------------------
 
+###  <a name="export-node"></a>To export a node to a text file using drush
+
+You can use drush to export a node to a text file. The file will
+be created in the module or feature that you identified for use with Nodes here:
+/admin/config/development/hook_update_deploy_tools
+Enter the machine name of the Node Feature or let it default to your custom
+deploy module. Though for true deployment, this value should be assigned
+through a hook_update_N using
+
+```php
+  $message =  HookUpdateDeployTools\Settings::set('hook_update_deploy_tools_node_feature', 'NODE_FEATURE_MACHINE_NAME');
+```
+
+Within that module, add a directory 'node_source'. This is where your node
+export files will be saved. The files will be named using the alias of the node
+being exported. (node-alias.txt)
+
+To export the node look up the node id of the node in the content UI.
+Then go to your terminal and type
+
+```
+drush site-deploy-export Node NID
+```
+Feedback from the drush command will tell you where the file has been created,
+or if there were any issues.
+
+
+###  <a name="import-node"></a>To Import a a node in a deploy or Feature's .install
+
+Nodes can be imported from a text file that was exported by the drush command.
+
+When you are ready to import the node, add this to a hook_update_N in your Page
+Manager Feature:
+
+```php
+  $message = HookUpdateDeployTools\Nodes::import('node-path-alias');
+  return $message;
+```
+
+or to do multiples
+
+```php
+  $node_aliases = array('node-alias-1', 'node-alias-2');
+  $message = HookUpdateDeployTools\Nodes::import($node_aliases);
+  return $message;
+```
+
+
+-------------------------------------------
+
 ###  <a name="import-page-manager-page"></a>To Import a Page Manager page in a Feature's .install
 
 Page Manager pages can be imported from a text file that matches the standard
@@ -509,12 +560,12 @@ To disable some Views, it looks like this:
   $message =  HookUpdateDeployTools\Views::disable('$views');
 
   return $message;
- 
+
 ```
 
 -------------------------------------------
 
-### <a name="variable"></a>To set a Drupal variable from an .install
+### <a name="setting-variable"></a>To set a Drupal variable from an .install
 
 Add something like this to a hook_update_N in your custom deploy module.install.
 

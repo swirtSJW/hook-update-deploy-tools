@@ -195,6 +195,11 @@ function drush_hook_update_deploy_tools_site_deploy_init($directory_path = '../c
 function drush_hook_update_deploy_tools_site_deploy_export($type, $machine_name) {
   try {
     $msg = array();
+    $alter_plurals = array(
+      'Rule' => 'Rules',
+      'Node' => 'Nodes',
+    );
+    $type = (!empty($alter_plurals[$type])) ? $alter_plurals[$type] : $type;
     // Check to see if the class exists.
     $class = '\HookUpdateDeployTools\\' . $type;
     \HookUpdateDeployTools\Check::classExists($class);

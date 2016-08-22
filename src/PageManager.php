@@ -249,7 +249,7 @@ class PageManager implements ImportInterface, ExportInterface {
   public static function export($page_machine_name) {
     $t = get_t();
     try {
-      Check::notEmpty('panel_machine_name', $page_machine_name, TRUE);
+      Check::notEmpty('panel_machine_name', $page_machine_name);
       $msg_return = '';
       $path = HudtInternal::getStoragePath('page_manager');
       $machine_name = HudtInternal::normalizeMachineName($page_machine_name);
