@@ -594,12 +594,12 @@ Add something like this to a hook_update_N in your custom module.install.
 ```php
 
   // Simple message example:
-  $msg = 'I did something cool I'm telling you about.';
+  $msg = "I did something cool I'm telling you about.";
   $return =  HookUpdateDeployTools\Message::make($msg);
 
   // A more robust example:
   // Watchdog style message.
-  $msg = 'I did something cool during update and created !count new nodes.';
+  $msg = "I did something cool during update and created !count new nodes.";
   // Optional Watchdog style variables array. Arrays or Objects are welcome
   // variable values.
   $variables = array('!count' => count($some_array_i_built)));

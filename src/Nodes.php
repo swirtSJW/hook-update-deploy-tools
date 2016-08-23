@@ -185,6 +185,7 @@ class Nodes implements ImportInterface, ExportInterface {
     // Determine if a node exists at that path.
     $language = (!empty($node_import->language)) ? $node_import->language : LANGUAGE_NONE;
     $node_existing = self::getNodeFromPath($path, $language);
+    $initial_vid = FALSE;
     $msg_vars = array(
       '@path' => $path,
       '@language' => $language,
@@ -193,6 +194,8 @@ class Nodes implements ImportInterface, ExportInterface {
     if (!empty($node_existing)) {
       // A node already exists at this path.  Update it.
       $operation = t('Updated');
+      $op = 'update';
+      $initial_vid = $node_existing->vid;
       $saved_node = self::updateExistingNode($node_import, $node_existing);
     }
     else {
@@ -206,39 +209,50 @@ class Nodes implements ImportInterface, ExportInterface {
 
       // Create one.
       $operation = t('Created');
+      $op = 'create';
       $saved_node = self::createNewNode($node_import);
     }
     $msg_vars['@operation'] = $operation;
+    $saved_path = (!empty($saved_node->nid)) ? drupal_lookup_path('alias', "node/{$saved_node->nid}", $saved_node->language) : FALSE;
 
     // Begin validation.
+    // Case race.  First to evaluate TRUE wins.
+    switch (TRUE) {
+      case (empty($saved_node->nid)):
+        // Save did not complete.  No nid granted.
+        $message = '@operation of @language: @path failed: The saved node ended up with no nid.';
+        $valid = FALSE;
+        break;
 
-    // Validate that the Saved node has a nid.
-    if (empty($saved_node->nid)) {
-      $message = '@operation of @language: @path failed: The saved node ended up with no nid.';
-      throw new HudtException($message, $msg_vars, WATCHDOG_ERROR, TRUE);
+      case ($saved_path !== $path):
+        // Path on newly saved node does not match the intended path.
+        $msg_vars['@savedpath'] = $saved_path;
+        $message = '@operation failure: The paths do not match. Intended Path: @path  Saved Path: @savedpath';
+        $valid = FALSE;
+        break;
+
+      case ($saved_node->title !== $node_import->title):
+        // Simple validation check to see if the saved title matches.
+        $msg_vars['@intended_title'] = $node_import->title;
+        $msg_vars['@saved_title'] = $saved_node->title;
+        $message = '@operation failure: The titles do not match. Intended title: @intended_title  Saved Title: @saved_title';
+        $valid = FALSE;
+        break;
+
+      // @TODO Consider other node properties that could be validated without
+      // leading to false negatives.
+
+      default:
+        // Passed all the validations, likely it is valid.
+        $valid = TRUE;
+
     }
 
-    // Path on newly saved node matches the original path.
-    $saved_path = drupal_lookup_path('alias', "node/{$saved_node->nid}", $saved_node->language);
-    if ($saved_path !== $path) {
-      $msg_vars['@savedpath'] = $saved_path;
-      $message = '@operation failure: The paths do not match. Intended Path: @path  Saved Path: @savedpath';
+    if (!$valid) {
+      // Validation failed so perform rollback.
+      self::rollbackImport($op, $saved_node, $initial_vid);
       throw new HudtException($message, $msg_vars, WATCHDOG_ERROR, TRUE);
     }
-
-    // Validate Title matches.
-    if ($saved_node->title !== $node_import->title) {
-      // The title did not import correctly.  Something went wrong.
-      $msg_vars['@intended_title'] = $node_import->title;
-      $msg_vars['@saved_title'] = $saved_node->title;
-      $message = '@operation failure: The titles do not match. Intended title: @intended_title  Saved Title: @saved_title';
-      throw new HudtException($message, $msg_vars, WATCHDOG_ERROR, TRUE);
-    }
-
-    // @TODO Consider other node properties that could be validated.
-
-    // @TODO if any of the validations fail.  The revision should be deleted as
-    // a way of rolling back what was changed.
 
     $return = array(
       'node' => $saved_node,
@@ -247,6 +261,50 @@ class Nodes implements ImportInterface, ExportInterface {
     );
 
     return $return;
+  }
+
+  /**
+   * Rolls back a revision or node creation.
+   *
+   * @param string $op
+   *   The crud op that was performed.
+   * @param object $node
+   *   The node object to be rolled back.
+   * @param int $rollback_to_vid
+   *   The revision id to roll back to.
+   */
+  public static function rollbackImport($op, $node, $rollback_to_vid) {
+    if ($op === 'create') {
+      // Op was a create, so delete the node if there was one created.
+      if (!empty($node->nid)) {
+        // The presence of nid indicates one was created, so delete it.
+        node_delete($node->nid);
+        $msg = "Node @nid created but failed validation and was deleted.";
+        $variables = array(
+          '@nid' => $node->nid,
+        );
+        Message::make($msg, $variables, WATCHDOG_INFO, 1);
+      }
+    }
+    else {
+      // Op was an update, so just delete the revision.
+      $revision_list = node_revision_list($node);
+      $revision_id_to_rollback = $node->vid;
+      unset($revision_list[$revision_id_to_rollback]);
+      if (count($revision_list) > 0) {
+        $last_revision = max(array_keys($revision_list));
+        $node_last_revision = node_load($node->nid, $rollback_to_vid);
+        node_save($node_last_revision);
+        node_revision_delete($revision_id_to_rollback);
+        $msg = "Node @nid updated but failed validation, Revision @deleted deleted and rolled back to revision @rolled_to.";
+        $variables = array(
+          '@nid' => $node->nid,
+          '@deleted' => $revision_id_to_rollback,
+          '@rolled_to' => $rollback_to_vid,
+        );
+        Message::make($msg, $variables, WATCHDOG_INFO, 1);
+      }
+    }
   }
 
 
