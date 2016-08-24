@@ -1,5 +1,10 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+hook_update_deploy_tools 7.x-1.18 Aug 23, 2016
+-----------------------------------------------
+* Issue #2776575: PHP Fatal error:  Call to undefined function posix_getpwuid()
+  when running drush site-deploy-init
 * Issue #2788765: drush import command to use importInterface.
 
 

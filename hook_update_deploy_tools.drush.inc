@@ -160,9 +160,11 @@ function drush_hook_update_deploy_tools_site_deploy_init_validate() {
     // http://php.net/manual/en/book.w32api.php
   }
   else {
-    $name = posix_getpwuid(posix_geteuid());
-    if ($name['name'] !== 'root') {
-      return drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt('There was an error creating your site_deploy module.'));
+    if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
+      $name = posix_getpwuid(posix_geteuid());
+      if ($name['name'] !== 'root') {
+        return drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt('There was an error creating your site_deploy module.'));
+      }
     }
   }
 }
