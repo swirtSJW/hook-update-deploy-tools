@@ -1,6 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
-
+* Issue #2788765: drush import command to use importInterface.
 
 
 hook_update_deploy_tools 7.x-1.17 Aug 23, 2016

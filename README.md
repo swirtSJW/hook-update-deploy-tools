@@ -294,9 +294,18 @@ When you are ready to import a menu, add this to a hook_update_N in your menu
 Feature
 
 ```php
-  $message = HookUpdateDeployTools\Menus::import('menu-bureaus-and-offices');
+  $message = HookUpdateDeployTools\Menus::import('menu-machine-name');
   return $message;
 ```
+
+
+
+###  <a name="import-menu-drush"></a>Import Menu with Drush
+
+```
+  drush site-deploy-import Menus menu-machine-name
+```
+
 
 -------------------------------------------
 
@@ -348,6 +357,18 @@ or to do multiples
 ```
 
 
+
+###  <a name="import-node-drush"></a>Import Node with Drush
+
+```
+  drush site-deploy-import Node node-alias
+
+  -or-
+
+  drush site-deploy-import Node node-export-filename
+```
+
+
 -------------------------------------------
 
 ###  <a name="import-page-manager-page"></a>To Import a Page Manager page in a Feature's .install
@@ -387,6 +408,15 @@ or to do multiples
   $message = HookUpdateDeployTools\PageManager::import($pages);
   return $message;
 ```
+
+
+###  <a name="import-pagemanager-drush"></a>Import PageManager page with Drush
+
+```
+  drush site-deploy-import PageManager page-machine-name
+```
+
+
 ###  <a name="export-page-manager-page"></a>To export a Page Manager page to a text file using drush
 
 You can use drush to export a Page Manager page to a text file. The file will
@@ -444,6 +474,14 @@ or to do multiples
 *Bonus* There is an admin UI to import a list of redirects by visiting
 /admin/config/search/redirect/hudt_import
 
+
+###  <a name="import-redirects-drush"></a>Import redirects file with Drush
+
+```
+  drush site-deploy-import Redirects redirect-list-filename
+```
+
+
 -------------------------------------------
 
 ###  <a name="import-rule"></a>To Import a Rule in a Feature's .install
@@ -482,6 +520,14 @@ or to do multiples
   $message = HookUpdateDeployTools\Rules::import($rules);
   return $message;
 ```
+
+###  <a name="import-rule-drush"></a>Import a Rule with Drush
+
+```
+  drush site-deploy-import Rule rules-machine-name
+```
+
+
 ###  <a name="export-rule"></a>To export a Rule to a text file using drush
 
 You can use drush to export a rule to a text file. The file will be created in

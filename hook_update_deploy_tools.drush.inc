@@ -39,6 +39,21 @@ function hook_update_deploy_tools_drush_command() {
     'aliases' => array('site-deploy-export', 'hook-update-deploy-tools-export'),
   );
 
+  $items['site-deploy-import'] = array(
+    'description' => dt("Import an item from an export file, found in location defined in hook_update_deploy_tools config"),
+    'arguments' => array(
+      'importable' => dt('The name type of thing to import.  Example: Rules'),
+      'item-name' => dt('The machine name of the importable item.  Example: rules_rule_name'),
+    ),
+    'required-arguments' => TRUE,
+    'options' => array(),
+    'examples' => array(
+      'drush site-deploy-import Rule rules_rule_name' => dt('Imports  rule "!path"', array('!path' => 'rules_rule_name')),
+    ),
+    'scope' => 'site',
+    'aliases' => array('site-deploy-import', 'hook-update-deploy-tools-import'),
+  );
+
   $items['site-deploy-n-lookup'] = array(
     'description' => dt("Returns the update_n number for a given module"),
     'arguments' => array(
@@ -98,6 +113,17 @@ function hook_update_deploy_tools_drush_help($section) {
     // The 'summary' meta item is displayed in `drush help --filter`.
     case 'meta:site-deploy-export:summary':
       return dt("Exports any exportable for this site.");
+
+    case 'drush:site-deploy-import':
+      return dt("Imports an item from a file in a location defined by hook_update_deploy_tools config.");
+
+    // The 'title' meta is used to name a group of commands in `drush help`.
+    case 'meta:drush:site-deploy-import:title':
+      return dt("Command for importing an item from a file.");
+
+    // The 'summary' meta item is displayed in `drush help --filter`.
+    case 'meta:site-deploy-import:summary':
+      return dt("Imports any HUDT importable for this site.");
 
     case 'drush:site-deploy-n-lookup':
       return dt("Looks up the last run number for hook_update_N for a module.");
@@ -226,6 +252,56 @@ function drush_hook_update_deploy_tools_site_deploy_export($type, $machine_name)
     );
 
     $msg = dt("site-deploy-export Caught exception:  @error", $vars);
+    drush_log($msg, 'error');
+    // Clear out the $msg so it is not duplicated in the return.
+    $msg = '';
+  }
+
+  return $msg;
+}
+
+/**
+ * Drush command to import anything that implements the ImportInterface.
+ *
+ * @param string $type
+ *   The type of thing to import Rules, Menus... must match HUDT class name.
+ * @param string $machine_name
+ *   The machine name or unique identifier of the item to import.
+ */
+function drush_hook_update_deploy_tools_site_deploy_import($type, $machine_name) {
+  try {
+    $msg = array();
+    $alter_plurals = array(
+      'Rule' => 'Rules',
+      'Node' => 'Nodes',
+    );
+    $type = (!empty($alter_plurals[$type])) ? $alter_plurals[$type] : $type;
+    // Check to see if the class exists.
+    $class = '\HookUpdateDeployTools\\' . $type;
+    \HookUpdateDeployTools\Check::classExists($class);
+    // Check that we are dealing with an importable type (an ImportInterface).
+    $implements = class_implements($class);
+    if ((is_array($implements)) && in_array('HookUpdateDeployTools\ImportInterface', $implements)) {
+      // Check that we have what it needs to import.
+      $class::canImport();
+      // It can import so can safely proceed.
+      $msg = dt('Imported') . " $type: [$machine_name] => " . $class::import($machine_name);
+    }
+    else {
+      // It does not implement ImportInterface.  Throw an exception.
+      $msg = '\HookUpdateDeployTools\@type does not implement ImportInterface so this command can not be called.';
+      $vars = array('@type' => $type);
+      throw new \HookUpdateDeployTools\HudtException($msg, $vars, WATCHDOG_ERROR, FALSE);
+    };
+  }
+  catch (\Exception $e) {
+    // Any errors from this drush command do not need to be watchdog logged.
+    $e->logIt = FALSE;
+    $vars = array(
+      '@error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
+    );
+
+    $msg = dt("site-deploy-import Caught exception:  @error", $vars);
     drush_log($msg, 'error');
     // Clear out the $msg so it is not duplicated in the return.
     $msg = '';
