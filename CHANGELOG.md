@@ -1,5 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Add better handling of workbench moderation states on Nodes import.
 
 hook_update_deploy_tools 7.x-1.18 Aug 23, 2016
 -----------------------------------------------

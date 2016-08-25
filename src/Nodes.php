@@ -214,7 +214,6 @@ class Nodes implements ImportInterface, ExportInterface {
     }
     $msg_vars['@operation'] = $operation;
     $saved_path = (!empty($saved_node->nid)) ? drupal_lookup_path('alias', "node/{$saved_node->nid}", $saved_node->language) : FALSE;
-
     // Begin validation.
     // Case race.  First to evaluate TRUE wins.
     switch (TRUE) {
@@ -322,6 +321,12 @@ class Nodes implements ImportInterface, ExportInterface {
     // @TODO Need to add handling for entity reference.
     $saved_node = clone $node;
     unset($saved_node->nid);
+    unset($saved_node->workbench_moderation);
+    // Map imported states to new moderation states.
+    if (!empty($node->workbench_moderation)) {
+      $saved_node->workbench_moderation_state_current = $node->workbench_moderation['current']->state;
+      $saved_node->workbench_moderation_state_new = $node->workbench_moderation['current']->state;
+    }
     $saved_node->revision = 1;
     $saved_node->is_new = TRUE;
     unset($saved_node->vid);
@@ -357,6 +362,12 @@ class Nodes implements ImportInterface, ExportInterface {
     $message = t("Updated from import file by hook_update_deploy_tools Node import.");
     // Concatenate the Updated log to the imported log message.
     $saved_node->log = "{$message}\n {$log}";
+    unset($saved_node->workbench_moderation);
+    // Map imported states to new moderation states.
+    if (!empty($node->workbench_moderation) && !empty($node_existing->workbench_moderation)) {
+      $saved_node->workbench_moderation_state_current = $node->workbench_moderation['current']->state;
+      $saved_node->workbench_moderation_state_new = $node->workbench_moderation['current']->state;
+    }
     node_save($saved_node);
 
     return $saved_node;
