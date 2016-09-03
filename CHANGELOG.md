@@ -1,5 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+hook_update_deploy_tools 7.x-1.19 Sept 2, 2016
+-----------------------------------------------
+* Removed validation for drush site-deploy-init to reduce false negatives.
 * Add better handling of workbench moderation states on Nodes import.
 
 hook_update_deploy_tools 7.x-1.18 Aug 23, 2016

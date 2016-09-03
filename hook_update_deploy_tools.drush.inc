@@ -153,20 +153,9 @@ function hook_update_deploy_tools_drush_help($section) {
  * Implements drush_hook_COMMAND_validate().
  */
 function drush_hook_update_deploy_tools_site_deploy_init_validate() {
-  if (drush_is_windows()) {
-    // $name = drush_get_username();
-    // TODO: implement check for elevated process using w32api
-    // as sudo is not available for Windows
-    // http://php.net/manual/en/book.w32api.php
-  }
-  else {
-    if (function_exists('posix_getpwuid') && function_exists('posix_geteuid')) {
-      $name = posix_getpwuid(posix_geteuid());
-      if ($name['name'] !== 'root') {
-        return drush_set_error('HOOK_UPDATE_DEPLOY_TOOLS', dt('There was an error creating your site_deploy module.'));
-      }
-    }
-  }
+  // @TODO File system checks to see if drush can create files have been removed
+  // to be reworked with a multi-platform solution without false negatives.
+  return TRUE;
 }
 
 /**
