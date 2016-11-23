@@ -1,5 +1,7 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Issue #2689145: by extralooping, Pryrios: require_once path incorrect on some
+  environments
 
 hook_update_deploy_tools 7.x-1.19 Sept 2, 2016
 -----------------------------------------------

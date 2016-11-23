@@ -5,7 +5,7 @@
  */
 
 // Use the class 4 autoloder to load classes as they are called.
-require_once 'vendor/autoload.php';
+require_once drupal_get_path('module', 'hook_update_deploy_tools') . '/vendor/autoload.php';
 
 /**
  * Implements hook_help().
