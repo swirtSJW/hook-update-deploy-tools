@@ -183,7 +183,7 @@ function hudt_squeal($thing) {
   if (function_exists('drush_print_r')) {
     drush_print_r($thing);
   }
-  else {
+  elseif (function_exists('dpm')) {
     dpm($thing);
   }
 }

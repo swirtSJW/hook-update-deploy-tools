@@ -1,5 +1,11 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+
+
+hook_update_deploy_tools 7.x-1.20 Nov 22, 2016
+-----------------------------------------------
+* Issue #2829468: properly evaluate dpm() prior to using in debug
 * Issue #2689145: by extralooping, Pryrios: require_once path incorrect on some
   environments
 
