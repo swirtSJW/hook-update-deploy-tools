@@ -73,7 +73,7 @@ class Views {
           '@view' => $view_name,
           '@op' => $op_friendly,
         );
-        $view = views_get_view($view_name);
+        $view = views_get_view($view_name, TRUE);
 
         // Check to see if it exists.
         if (empty($view)) {
