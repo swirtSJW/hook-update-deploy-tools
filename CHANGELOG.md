@@ -1,7 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 
-
+hook_update_deploy_tools 7.x-1.21 Jan 12, 2017
+-----------------------------------------------
+* Issue #2838516: Make Views check clear the view info cache.
 
 hook_update_deploy_tools 7.x-1.20 Nov 22, 2016
 -----------------------------------------------
