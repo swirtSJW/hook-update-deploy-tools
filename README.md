@@ -262,7 +262,7 @@ revert like this:
 Add something like this to a hook_update_N in your custom deploy module.install.
 
 ```php
-  $message =  HookUpdateDeployTools\Fields::deleteInstance('field_name', 'bundle_name', 'content_type');
+  $message =  HookUpdateDeployTools\Fields::deleteInstance('field_name', 'bundle_name', 'entity_type');
   return $message;
 }
 
