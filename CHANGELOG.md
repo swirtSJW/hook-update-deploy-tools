@@ -1,6 +1,12 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
-* Issue #2857507: Make Vocabulary::add method.
+
+
+
+hook_update_deploy_tools 7.x-1.22 Mar 3, 2017
+-----------------------------------------------
+* Issue #2857507: Add Vocabularies::add method.
+* Issue #2857625: Add Vocabularies::delete method.
 
 hook_update_deploy_tools 7.x-1.21 Jan 12, 2017
 -----------------------------------------------

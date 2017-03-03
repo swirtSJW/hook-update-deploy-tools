@@ -21,7 +21,7 @@ CONTENTS OF THIS FILE
     * <a href="#update-node">Updating Node Values</a>
     * <a href="#update-alias">Updating Alias</a>
     * <a href="#views">Enable and Disable a View</a>
-    * <a href="#vocabulary-add">Add a Vocabulary</a>
+    * <a href="#vocabulary-add">Add or Delete a Vocabulary</a>
     * <a href="#setting-variable">Setting Drupal Variables</a>
     * <a href="#messages">Hook Update Messages</a>
     * <a href="#lookup-set">Check and Change Last Run hook_update_N</a>
@@ -611,13 +611,22 @@ To disable some Views, it looks like this:
 ```
 
 -------------------------------------------
-### <a name="vocabulary-add"></a>To add a Vocabulary from an .install
+### <a name="vocabulary-add"></a>To add or delete a Vocabulary from an .install
 
-The following line would add a Vocabulary to the Taxonomy.
+The following line would add a Vocabulary to Taxonomy.
 
 ```php
 
   $message =  HookUpdateDeployTools\Vocabularies::add('Vocabulary Name', 'vocab_machine_name', 'A text description for the Vocabulary.');
+  return $message;
+
+```
+
+The following line would delete a Vocabulary from Taxonomy.
+
+```php
+
+  $message =  HookUpdateDeployTools\Vocabularies::delete('vocab_machine_name');
   return $message;
 
 ```

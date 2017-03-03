@@ -84,20 +84,19 @@ class Vocabularies {
           throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
         }
       }
-
       // Verify the saved data is what we put in.
       // Verify Name.
       if ($name !== $vocabulary->name) {
         // The name did not match. Throw exception.
         $vars['!saved_name'] = $vocabulary->name;
-        $message = "The Vocabulary !machine_name @saved_text, but requested:'!name'  does not match saved:'!saved_name'.";
+        $message = "The Vocabulary !machine_name @saved_text, but the requested name:'!name'  does not match saved name:'!saved_name'.";
         throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
       }
       // Verify Description.
       if ($description !== $vocabulary->description) {
         // The description does not match.  Throw exception.
         $vars['!saved_desc'] = $vocabulary->description;
-        $message = "The Vocabulary !machine_name @saved_text, but requested:'!description'  does not match saved:'!saved_desc'.";
+        $message = "The Vocabulary !machine_name @saved_text, but requested description:'!description'  does not match saved description:'!saved_desc'.";
         throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
       }
 
@@ -107,20 +106,97 @@ class Vocabularies {
 
       if (!method_exists($e, 'logMessage')) {
         // Not logged yet, so log it.
-        $message = 'Vocabulary::add !machine_name failed because: !error';
+        $message = 'Vocabularies::add !machine_name failed because: !error';
         Message::make($message, $vars, WATCHDOG_ERROR);
       }
 
-      // The update has failed.  If a new vocabulary was created, delete it.
-      if ($saved_status) {
-        // The Vocabulary was created new.
-        // @TODO Build a delete.
+      // The update has failed.  If a new Vocabulary was created, delete it.
+      if ($saved_status === SAVED_NEW) {
+        // The Vocabulary was created new, so it should be deleted.
+        self::delete($machine_name);
+        $vars['!error'] .= " The Vocabulary {$machine_name} created by this attempt was deleted.";
       }
 
       throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
 
     }
     $return_msg .= Message::make("The Vocabulary !name (!machine_name) @saved_text with Description: !description", $vars, WATCHDOG_INFO, 1);
+
+    return $return_msg;
+  }
+
+  /**
+   * Delete a vocabulary.
+   *
+   * @param string $machine_name
+   *   The machine name to use for the Vocabulary.  Must use underscores.
+   *
+   * @return string
+   *   A string message to return to the hook_update_N if no exceptions.
+   *
+   * @throws HudtException
+   *   Message throwing exception if criteria is deemed unfit to declare the
+   *   vocabulary deletion a success.
+   */
+  public static function delete($machine_name) {
+    try {
+      // Make sure we can use taxonomy and call the functions needed.
+      Check::canUse('taxonomy');
+      Check::canCall('taxonomy_vocabulary_machine_name_load');
+      Check::canCall('taxonomy_vocabulary_delete');
+      Check::notEmpty('$machine_name', $machine_name);
+
+      $vars = array(
+        '!machine_name' => $machine_name,
+      );
+
+      // Does it  exist?  If it does, we can delete it.
+      $vocabulary = taxonomy_vocabulary_machine_name_load($machine_name);
+      if ($vocabulary === FALSE) {
+        // The Vocabulary does not exist. Skip the update.
+        $vars['@exists_text'] = "does not exist";
+        $vars['@action_taken'] = "so was not deleted. Skipping Vocabularies::delete";
+      }
+      else {
+        // The Vocabulary does exist.
+        $vars['@exists_text'] = "exists";
+        // Delete the Vocabulary.
+        $delete_status = taxonomy_vocabulary_delete($vocabulary->vid);
+        $vars['@deleted_status'] = $delete_status;
+
+        // Was it deleted?
+        if ($delete_status === SAVED_DELETED) {
+          $vars['@action_taken'] = "was deleted";
+          // Deleted, but verify it stayed delete.
+          // The results are static cached, so may mislead us with old info.
+          $vocabulary = taxonomy_vocabulary_machine_name_load($machine_name);
+          if ($vocabulary !== FALSE) {
+            // Something went wrong.  The Vocabulary did not stay deleted.
+            // Throw exception.
+            $message = "Deleting the Vocabulary '!machine_name' did no go as expected. It @action_taken but still @exists_text.";
+            throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+          }
+        }
+        else {
+          // Failed to delete, throw an exception.
+          $message = "Deleting the Vocabulary '!machine_name' did not go as expected. Status:'@deleted_status'";
+          throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+        }
+      }
+    }
+    catch (\Exception $e) {
+      $vars['!error'] = (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage();
+
+      if (!method_exists($e, 'logMessage')) {
+        // Not logged yet, so log it.
+        $message = 'Vocabularies::delete !machine_name failed because: !error';
+        Message::make($message, $vars, WATCHDOG_ERROR);
+      }
+
+      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
+
+    }
+    $return_msg = Message::make("Vocabulary '!machine_name' @exists_text @action_taken.", $vars, WATCHDOG_INFO, 1);
 
     return $return_msg;
   }
