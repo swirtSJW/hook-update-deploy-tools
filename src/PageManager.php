@@ -56,7 +56,7 @@ class PageManager implements ImportInterface, ExportInterface {
               '@machine_name' => $page_machine_name,
               '@file_prefix' => $page_manager_file_prefix,
             );
-            $message = "The requested Page Mannager import '@machine_name' failed to create the page. Adjust your @file_prefix-export.txt text file accordingly and re-run update.";
+            $message = "The requested Page Manager import '@machine_name' failed to create the page. Adjust your @file_prefix-export.txt text file accordingly and re-run update.";
             throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
           }
         }
