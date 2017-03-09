@@ -1,5 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Issue #2859243: OG: Add user id's to a Group.
 * Issue #2859240: OG: Load a Group by name, with strict checking.
 * Issue #2859333: Add Check::isGroup to strictly check for something being an Organic Group.
 
