@@ -106,6 +106,60 @@ class Groups {
 
 
   /**
+   * Add members from one group, to another group.
+   *
+   * @param string $destination_group_name
+   *   The name of the group to receive the new members.
+   * @param string $source_group_name
+   *   The name of the group to gather members from.
+   *
+   * @return string
+   *   A string message to return to the hook_update_N if no exceptions.
+   *
+   * @throws HudtException
+   *   Message throwing exception if criteria is deemed unfit to declare the
+   *   cooptMembers a success.
+   */
+  public static function cooptMembers($destination_group_name, $source_group_name) {
+    try {
+      // Make sure we can use OG and call the functions needed.
+      Check::canUse('og');
+      Check::canCall('og_get_group_members_properties');
+      Check::notEmpty('$destination_group_name', $destination_group_name);
+      Check::notEmpty('$source_group_name', $source_group_name);
+      $vars = array(
+        '@destination_group_name' => $destination_group_name,
+        '@source_group_name' => $source_group_name,
+      );
+
+      $group_destination = Groups::loadByName($destination_group_name);
+      $group_source = Groups::loadByName($source_group_name);
+      $vars['@nid_destination'] = $group_destination->nid;
+      $vars['@nid_source'] = $group_source->nid;
+
+      $members_source = og_get_group_members_properties($group_source, array(), 'members', 'node');
+      $vars['@count_source'] = count($members_source);
+
+      $message = Message::make("Preparing to coopt @count_source members from group:@source_group_name(@nid_source) into group:@destination_group_name(@nid_destination).", $vars, WATCHDOG_INFO, 2);
+
+      $message .= self::assignUsersToGroup($members_source, $group_destination->nid);
+    }
+    catch (\Exception $e) {
+      $vars['!error'] = (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage();
+
+      if (!method_exists($e, 'logMessage')) {
+        // Not logged yet, so log it.
+        $message = 'Groups::cooptMembers !destination_group_name failed because: !error';
+        Message::make($message, $vars, WATCHDOG_ERROR);
+      }
+      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
+    }
+
+    return $message;
+  }
+
+
+  /**
    * Load a Group by name.
    *
    * @param string $group_name
