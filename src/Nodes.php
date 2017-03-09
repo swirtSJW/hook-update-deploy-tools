@@ -521,6 +521,11 @@ class Nodes implements ImportInterface, ExportInterface {
       'uid',
       'translate',
     );
+    $variables = array(
+      '!nid' => $nid,
+      '!fieldname' => $field,
+      '!value' => $value,
+    );
     // Is it a simple field?
     if (in_array($field, $simple_fields)) {
       $node = node_load($nid);
@@ -533,11 +538,6 @@ class Nodes implements ImportInterface, ExportInterface {
           // Save the node.
           $node = node_save($node);
           // Set the message.
-          $variables = array(
-            '!nid' => $node->nid,
-            '!fieldname' => $field,
-            '!value' => $value,
-          );
           $message = "On Node !nid, the field value of '!fieldname' was changed to '!value'.";
           // Success, return the message.
           return Message::make($message, $variables, WATCHDOG_INFO);;
@@ -545,7 +545,6 @@ class Nodes implements ImportInterface, ExportInterface {
         else {
           // The field does not exist.
           $message = "The field '!fieldname' does not exist on the node !nid so it could not be altered.";
-          $variables = array('!fieldname' => $field, '!nid' => $nid);
           Message::make($message, $variables, WATCHDOG_ERROR);
           throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
         }
@@ -553,7 +552,6 @@ class Nodes implements ImportInterface, ExportInterface {
       else {
         // The node does not exist.
         $message = "The node '!nid' does not exist, so can not be updated.";
-        $variables = array('!nid' => $nid);
         Message::make($message, $variables, WATCHDOG_ERROR);
         throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
       }
@@ -561,7 +559,6 @@ class Nodes implements ImportInterface, ExportInterface {
     else {
       // The field is not a simple field so can not use this method.
       $message = "The field '!fieldname' is not a simple field and can not be changed by the method ::modifySimpleFieldValue.";
-      $variables = array('!fieldname' => $field);
       Message::make($message, $variables, WATCHDOG_ERROR);
       throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
     }

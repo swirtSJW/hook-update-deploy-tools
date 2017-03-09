@@ -1,5 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* Issue #2859388: Using Nodes::modifySimpleFieldValue the message is not outputting the node id.
 * Issue #2858631: OG: Assign members of one Group to another Group (co-opt).
 * Issue #2859243: OG: Add user id's to a Group.
 * Issue #2859240: OG: Load a Group by name, with strict checking.
