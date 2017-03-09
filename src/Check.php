@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * File for methods related to strictly checking things.
+ */
 
 namespace HookUpdateDeployTools;
 
@@ -105,6 +109,34 @@ class Check {
     return $return;
   }
 
+  /**
+   * A strict check for entity being a group.  Fails update if !group.
+   *
+   * @param string $name
+   *   The name of a variable being checked for Group.
+   * @param object $entity
+   *   The enitity object being checked.
+   *
+   * @return bool
+   *   TRUE if $value is a Group.
+   *
+   * @throws HudtException if it is not a group.
+   */
+  public static function isGroup($name, $entity) {
+    Check::canUse('og');
+    Check::canCall('og_is_group');
+    if (og_is_group('node', $entity)) {
+      $return = TRUE;
+    }
+    else {
+      // This is strict, so make message and throw DrupalUpdateException.
+      $message = 'The entity !name was not an Organic Group. Could not proceed.';
+      $vars = array('!name' => $entity);
+      throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+    }
+
+    return $return;
+  }
 
   /**
    * A strict check for numeric.  Fails update if $value is !numeric.

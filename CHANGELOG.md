@@ -1,6 +1,6 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
-
+* Issue #2859333: Add Check::isGroup to strictly check for something being an Organic Group.
 
 
 hook_update_deploy_tools 7.x-1.22 Mar 3, 2017
