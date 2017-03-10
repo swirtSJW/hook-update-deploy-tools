@@ -1,5 +1,10 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+
+
+
+hook_update_deploy_tools 7.x-1.23 Mar 10, 2017
+-----------------------------------------------
 * Issue #2859596: Make Documentation more approachable.
 * Issue #2859388: Using Nodes::modifySimpleFieldValue the message is not outputting the node id.
 * Issue #2858631: OG: Assign members of one Group to another Group (co-opt).
