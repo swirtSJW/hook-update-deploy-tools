@@ -83,6 +83,11 @@ releases programmatically through hook_update_N():
 * **Vocabularies**
     * <a href="#vocabulary-add">Add Vocabulary</a>
     * <a href="#vocabulary-delete">Delete Vocabulary</a>
+    * <a href="#vocabulary-load">Load a Vocabulary</a>
+    * **Terms**
+        * <a href="#vocabulary-terms-export">Export Terms</a>
+        * <a href="#vocabulary-terms-import">Import/Update Terms</a>
+        * <a href="#vocabulary-terms-load">Load Terms</a>
 
 
 
@@ -850,6 +855,95 @@ to delete a Vocabulary from Taxonomy.
 
   $message =  HookUpdateDeployTools\Vocabularies::delete('vocab_machine_name');
   return $message;
+
+```
+
+
+### <a name="vocabulary-load"></a>Load a Vocabulary
+
+Vocabularies can be loaded a few ways in a hook_update_N for use in other
+custom processing.
+
+By Human Name:
+
+```php
+
+  // $vocabulary_name = 'Human Name',
+  // $strict TRUE or FALSE  (if TRUE, it will fail the update if the vocabulary is not found)."
+  $vocabulary =  HookUpdateDeployTools\Vocabularies::loadByName($vocabulary_name, $strict);
+
+```
+
+By machine_name:
+
+```php
+
+  // $vocabulary_machine_name = 'the_vocabulary_machine_name',
+  // $strict TRUE or FALSE  (if TRUE, it will fail the update if the vocabulary is not found)."
+  $vocabulary =  HookUpdateDeployTools\Vocabularies::loadByMachineName($vocabulary_machine_name, $strict);
+
+```
+
+
+## <a name="terms">Terms (Taxonomy)
+
+### <a name="vocabulary-terms-export"></a>Export Terms to a txt file
+
+You can export a term to a txt file for import to another environment with the
+drush command:
+
+```
+  drush site-deploy-export Terms {TID}
+
+
+  example: drush site-deploy-export Terms 4466
+```
+
+If needed, it could be scripted like this:
+
+```php
+  $message = HookUpdateDeployTools\Terms::export(TID);
+```
+
+
+
+### <a name="vocabulary-terms-import"></a>Import Terms from a txt file
+
+You can import a term from a txt file for import to another environment with the
+drush command:
+
+```
+  drush site-deploy-import Terms 'Vocabulary Name|Term Name'
+
+  example: drush site-deploy-import Terms 'Icecream Flavors|Chocolate'
+```
+
+If needed, it could be placed in a hook_update_N():
+
+```php
+  $vocab_terms = array(
+    // 'Vocabulary Name|Term Name',
+    'Icecream Flavors|Chocolate',
+    'Icecream Flavors|Vanilla',
+    'Icecream Flavors|Peach',
+  );
+  $message = HookUpdateDeployTools\Terms::import($vocab_terms);
+  return $message;
+```
+
+
+### <a name="vocabulary-terms-load"></a>Load a Term
+
+Vocabularies can be loaded in a hook_update_N for use in other
+custom processing.
+
+By Human Name:
+
+```php
+  // $term_name = "Term Human Name"
+  // $vocabulary_name = 'Vocabulary Human Name'  OR 'vocabulary_machine_name'
+  // $strict TRUE or FALSE  (If TRUE, it will fail the update if the Term is not found)."
+  $term =  HookUpdateDeployTools\Vocabularies::loadByName($term_name, $vocabulary_name, $strict = FALSE);
 
 ```
 

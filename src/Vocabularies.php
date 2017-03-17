@@ -1,8 +1,4 @@
 <?php
-/**
- * @file
- * File for methods related to Vocabulary management.
- */
 
 namespace HookUpdateDeployTools;
 
@@ -200,4 +196,86 @@ class Vocabularies {
 
     return $return_msg;
   }
+
+  /**
+   * Load a Vocabulary from its machine name.
+   *
+   * @param string $vocabulary_machine_name
+   *   The human readable name of a Vocabulary.
+   * @param bool $strict
+   *   Flag to cause exception to be thrown if not able to load.
+   *
+   * @return object
+   *   The Vocabulary object if found.
+   *
+   * @throws \HudtException if it can not be found.
+   */
+  public static function loadByMachineName($vocabulary_machine_name, $strict = FALSE) {
+    Check::canUse('taxonomy');
+    Check::canCall('taxonomy_vocabulary_machine_name_load');
+    Check::notEmpty('vocabulary_machine_name', $vocabulary_machine_name);
+    // Grab all the Vocabularies.
+    $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_machine_name);
+
+    if (!empty($vocabulary)) {
+      return $vocabulary;
+    }
+    else {
+      // Vocabulary not found.
+      if ($strict) {
+        // The Vocabulary was not found, throw exception, call this a failure.
+        $message = "There is no Vocabulary with machine name '@!name'. It could not be loaded.";
+        $variables = array(
+          '@name' => $vocabulary_machine_name,
+        );
+
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
+      }
+      else {
+        return FALSE;
+      }
+    }
+  }
+
+
+  /**
+   * Load a Vocabulary from its human readable name.
+   *
+   * @param string $vocabulary_name
+   *   The human readable name of a Vocabulary.
+   * @param bool $strict
+   *   Flag to cause exception to be thrown if not able to load.
+   *
+   * @return object
+   *   The Vocabulary object if found.
+   *
+   * @throws \HudtException if it can not be found.
+   */
+  public static function loadByName($vocabulary_name, $strict = FALSE) {
+    Check::canUse('taxonomy');
+    Check::canCall('taxonomy_get_vocabularies');
+    // Grab all the Vocabularies.
+    $vocabularies = taxonomy_get_vocabularies(NULL);
+    // Look for the vocabulary.
+    foreach ($vocabularies as $vocabulary) {
+      if (!empty($vocabulary) && ($vocabulary->name === $vocabulary_name)) {
+        return $vocabulary;
+      }
+    }
+
+    if ($strict) {
+      // The Vocabulary was not found, throw exception, call this a failure.
+      $message = "There is no Vocabulary '@!name'. It could not be loaded.";
+      $variables = array(
+        '@name' => $vocabulary_name,
+      );
+
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+
 }

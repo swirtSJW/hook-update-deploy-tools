@@ -1,6 +1,12 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
+* [New items go at the top of this list.]
 
+hook_update_deploy_tools 7.x-1.24 Mar 17, 2017
+-----------------------------------------------
+* Issue #2603886: Import and export taxonomy term from a txt file'
+  https://www.drupal.org/node/2603886
+* Add Vocabulary load methods.
 
 
 hook_update_deploy_tools 7.x-1.23 Mar 10, 2017

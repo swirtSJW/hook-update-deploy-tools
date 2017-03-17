@@ -197,6 +197,7 @@ class HudtInternal {
       'page_manager' => 'hook_update_deploy_tools_page_manager_feature',
       'redirect' => 'hook_update_deploy_tools_redirect_feature',
       'rules' => 'hook_update_deploy_tools_rules_feature',
+      'term' => 'hook_update_deploy_tools_term_feature',
     );
     return $storage_map;
   }
