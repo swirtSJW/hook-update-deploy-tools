@@ -111,6 +111,87 @@ class Terms implements ImportInterface, ExportInterface {
     return TRUE;
   }
 
+  /**
+   * Delete a Term.
+   *
+   * @param string $term_name
+   *   The human term name to be deleted.
+   * @param string $vocabulary_name
+   *   The human or machine name of the Vocabulary the term resides in.
+   *
+   * @return string
+   *   A string message to return to the hook_update_N if no exceptions.
+   *
+   * @throws HudtException
+   *   Message throwing exception if criteria is deemed unfit to declare the
+   *   term deletion a success.
+   */
+  public static function delete($term_name, $vocabulary_name) {
+    try {
+      // Make sure we can use taxonomy and call the functions needed.
+      Check::canUse('taxonomy');
+      Check::canCall('taxonomy_term_delete');
+      Check::notEmpty('$term_name', $term_name);
+      Check::notEmpty('$vocabulary_name', $vocabulary_name);
+
+      $vars = array(
+        '@term_name' => $term_name,
+        '@vocabulary_name' => $vocabulary_name,
+      );
+
+      // Does it  exist?  If it does, we can delete it.
+      $term = self::loadByName($term_name, $vocabulary_name, FALSE);
+
+      if (empty($term)) {
+        // The Term does not exist. Skip the delete.
+        $vars['@exists_text'] = "does not exist";
+        $vars['@action_taken'] = "so was not deleted. Skipping Terms::delete";
+      }
+      else {
+        // The Term does exist.
+        $vars['@tid'] = $term->tid;
+        $vars['@exists_text'] = "exists";
+        // Delete the Term.
+        $delete_status = taxonomy_term_delete($term->tid);
+        $vars['@deleted_status'] = $delete_status;
+
+        // Was it deleted?
+        if ($delete_status === SAVED_DELETED) {
+          $vars['@action_taken'] = "was deleted";
+          // Deleted, but verify it stayed deleted.
+          // The results are static cached, so may mislead us with old info.
+          $term = self::loadByName($term_name, $vocabulary_name, FALSE);
+          if (!empty($term)) {
+            // Something went wrong.  The Term did not stay deleted.
+            // Throw exception.
+            $message = "Deleting the Term '@vocabulary_name:@term_name' did no go as expected. It @action_taken but still @exists_text.";
+            throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+          }
+        }
+        else {
+          // Failed to delete, throw an exception.
+          $message = "Deleting the Term '@vocabulary_name:@term_name' did not go as expected. Status:'@deleted_status'";
+          throw new HudtException($message, $vars, WATCHDOG_ERROR, TRUE);
+        }
+      }
+    }
+    catch (\Exception $e) {
+      $vars['!error'] = (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage();
+
+      if (!method_exists($e, 'logMessage')) {
+        // Not logged yet, so log it.
+        $message = "Terms::delete Term '@vocabulary_name:@term_name' failed because: !error";
+        Message::make($message, $vars, WATCHDOG_ERROR);
+      }
+
+      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
+
+    }
+    $return_msg = Message::make("Term @vocabulary_name:@term_name(@tid) @exists_text @action_taken.", $vars, WATCHDOG_INFO, 1);
+
+    return $return_msg;
+  }
+
 
   /**
    * Gets the Term Name from the $vocabulary_term_names. Strict.

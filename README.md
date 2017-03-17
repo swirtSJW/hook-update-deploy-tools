@@ -85,6 +85,7 @@ releases programmatically through hook_update_N():
     * <a href="#vocabulary-delete">Delete Vocabulary</a>
     * <a href="#vocabulary-load">Load a Vocabulary</a>
     * **Terms**
+        * <a href="#vocabulary-terms-delete">Delete Terms</a>
         * <a href="#vocabulary-terms-export">Export Terms</a>
         * <a href="#vocabulary-terms-import">Import/Update Terms</a>
         * <a href="#vocabulary-terms-load">Load Terms</a>
@@ -887,6 +888,18 @@ By machine_name:
 
 ## <a name="terms">Terms (Taxonomy)
 
+HookUpdateDeployTools\Terms::delete('Postsecondary Completion', 'Related Groups')
+### <a name="vocabulary-terms-delete"></a>Delete a Term
+
+To delete a Term you can put this in a hook_update_N():
+
+```php
+  $message = HookUpdateDeployTools\Terms::delete('Group Name', 'Vocabulary Name');
+
+  example: $message = HookUpdateDeployTools\Terms::delete('Peach', 'Icecream Flavors');
+```
+
+
 ### <a name="vocabulary-terms-export"></a>Export Terms to a txt file
 
 You can export a term to a txt file for import to another environment with the
@@ -934,7 +947,7 @@ If needed, it could be placed in a hook_update_N():
 
 ### <a name="vocabulary-terms-load"></a>Load a Term
 
-Vocabularies can be loaded in a hook_update_N for use in other
+A Term can be loaded in a hook_update_N for use in other
 custom processing.
 
 By Human Name:
