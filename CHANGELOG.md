@@ -1,6 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+* Issue #2862337: bugfix Terms: incorrectly set wrong parent if no parent.
+  https://www.drupal.org/node/2862337
+
 
 hook_update_deploy_tools 7.x-1.24 Mar 17, 2017
 -----------------------------------------------

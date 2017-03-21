@@ -49,7 +49,7 @@ class Terms implements ImportInterface, ExportInterface {
           $result = self::importOne($term_import, $vocabulary_name, $term_name);
 
           // No Exceptions so far, so it must be a success.
-          $message = '@operation: @path - successful.';
+          $message = '@operation: @vterm - successful.';
           global $base_url;
           $link = "{$base_url}/{$result['edit_link']}";
           $vars = array(
@@ -284,8 +284,7 @@ class Terms implements ImportInterface, ExportInterface {
    *   In the event of something that fails the import.
    */
   private static function importOne($term_import, $vocabulary_name, $term_name) {
-    // Determine if ther term exists in that vocabulary.
-    $language = (!empty($term_import->language)) ? $term_import->language : LANGUAGE_NONE;
+    // Determine if the term exists in that vocabulary.
     $term_existing = Terms::loadByName($term_name, $vocabulary_name);
     $msg_vars = array(
       '@vocabulary_name' => $vocabulary_name,
@@ -592,7 +591,14 @@ class Terms implements ImportInterface, ExportInterface {
         }
       }
     }
-    $term_import->parent = $new_parents;
+    if (!empty($new_parents)) {
+      // Add the local parents.
+      $term_import->parent = $new_parents;
+    }
+    else {
+      // Needs to be array(0) in order to set <root> as the parent.
+      $term_import->parent = array(0);
+    }
     unset($term_import->parents);
   }
 }
