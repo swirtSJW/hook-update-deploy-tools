@@ -1,6 +1,12 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+
+
+hook_update_deploy_tools 7.x-1.25 Mar 20, 2017
+-----------------------------------------------
+* Issue #2862338: bugfix Terms on import if an update, the wrong term may get updated.
+  https://www.drupal.org/node/2862338
 * Issue #2862337: bugfix Terms: incorrectly set wrong parent if no parent.
   https://www.drupal.org/node/2862337
 

@@ -431,10 +431,12 @@ class Terms implements ImportInterface, ExportInterface {
    */
   private static function updateExistingTerm($term_import, $term_existing) {
     $saved_term = clone $term_import;
-    $saved_term->nid = $term_existing->nid;
+    $saved_term->tid = $term_existing->tid;
 
     // @TODO Need to add handling for field collections.
     // @TODO Need to add handling for entity reference.
+    // Entity reference works as long as the entity being referenced exists and
+    // has the same entity id as the one being referenced.
 
     taxonomy_term_save($saved_term);
 
