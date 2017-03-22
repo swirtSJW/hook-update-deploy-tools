@@ -1,6 +1,8 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+* Issue #2863074: Terms: Unused vars referenced creating e-notice.
+  https://www.drupal.org/node/2863074
 
 
 hook_update_deploy_tools 7.x-1.25 Mar 20, 2017

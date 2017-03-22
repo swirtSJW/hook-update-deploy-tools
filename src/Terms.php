@@ -289,7 +289,6 @@ class Terms implements ImportInterface, ExportInterface {
     $msg_vars = array(
       '@vocabulary_name' => $vocabulary_name,
       '@term_name' => $term_name,
-      '@language' => $language,
     );
 
     self::unpackParents($term_import);
@@ -343,7 +342,7 @@ class Terms implements ImportInterface, ExportInterface {
     $return = array(
       'term' => $saved_term,
       'operation' => "{$operation}: term/{$saved_term->tid}",
-      'edit_link' => "taxonomy/term/{$saved_term->nid}/edit",
+      'edit_link' => "taxonomy/term/{$saved_term->tid}/edit",
     );
 
     return $return;
