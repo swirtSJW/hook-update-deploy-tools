@@ -2,9 +2,10 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
-hook_update_deploy_tools 7.x-1.26 Mar 24, 2017
+hook_update_deploy_tools 7.x-1.27 Mar 24, 2017
 -----------------------------------------------
 * Issue #2863711: Blocks: Add Update block properties method.
+* https://www.drupal.org/node/2863711
 * Issue #2863690: Blocks: Add enable and disable methods.
   https://www.drupal.org/node/2863690
 * Issue #2863074: Terms: Unused vars referenced creating e-notice.
