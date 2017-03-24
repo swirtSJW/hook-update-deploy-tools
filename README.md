@@ -44,6 +44,10 @@ releases programmatically through hook_update_N():
     * <a href="#lookup-set">Set Last Run hook_update_N</a>
 * **Aliases** (pathauto)
     * <a href="#update-alias">Update Alias</a>
+* **Blocks**
+    * <a href="#block-disable">Disable Block</a>
+    * <a href="#block-enable">Enable a Block to a region</a>
+    * <a href="#block-update-instance">Update an instance of a Block</a>
 * **Features**
     * <a href="#revert">Revert Features</a>
     * <a href="#revert-forced">Revert Features Forced</a>
@@ -233,6 +237,38 @@ Add this to a hook_update_N in your custom deploy module.install.
 This will attempt to alter the alias if the old_alias exists.  The language has
 to match the language of the original alias being modified (usually matches the
 node that it is assigned to).
+
+
+-------------------------------------------
+
+## <a name="blocks"></a>Blocks
+
+
+### <a name="block-disable"></a>Disable a Block
+
+To disable a block (move it to region 'none')
+Add this to a hook_update_N in your custom deploy module.install.
+
+```php
+  // $theme is optional.  If not specified it will apply it to the default theme.
+  $message = HookUpdateDeployTools\Blocks::disable($module, $block_delta, $theme = NULL);
+  return $message;
+
+```
+
+### <a name="block-enable"></a>Enable a Block Instance to a Region
+
+To enable a block instance (move it to a region)
+Add this to a hook_update_N in your custom deploy module.install.
+
+```php
+  // $theme is optional.  If not specified it will apply it to the default theme.
+  $message = HookUpdateDeployTools\Blocks::enable($module, $block_delta, $region_name, $theme = NULL);
+  return $message;
+
+```
+
+
 
 -------------------------------------------
 
