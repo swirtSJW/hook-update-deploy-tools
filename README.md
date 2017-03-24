@@ -268,7 +268,31 @@ Add this to a hook_update_N in your custom deploy module.install.
 
 ```
 
+### <a name="block-update-instance"></a>Update an instance of a Block (not block content)
 
+To update properties of a block instance you need to specify the properties you
+wish to update.  All $block properties are optional.  Only those that are
+included will be altered.  The others will be unaffected.
+Add this to a hook_update_N in your custom deploy module.install.
+
+```php
+  // $theme is optional.  If not specified it will apply it to the default theme.
+  // $block properties are limited to the following:
+  //  status: bool
+  //  weight: pos or neg numbers
+  //  region: the name or number of the region.
+  //  visibility:
+  //  pages: list of page URL(s) to place the block on.
+  //  title: the administrative title of the block.
+  //  cache:
+  $block_properties = array(
+    'pages' => '<front>',
+    'weight' => 23,
+  );
+  $message = HookUpdateDeployTools\Blocks:: updateInstanceProperties($module, $block_delta, $theme, $block_properties);
+  return $message;
+
+```
 
 -------------------------------------------
 

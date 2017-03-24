@@ -243,6 +243,45 @@ class Blocks {
    *   pages: list of page URL(s) to place the block on.
    *   title: the administrative title of the block.
    *   cache:
+   *
+   * @return string
+   *   message for hook_update_N().
+   */
+  public static function updateInstanceProperties($module, $block_delta, $theme, $block_properties) {
+    $block_original = self::load($module, $block_delta, $theme);
+    self::updateInstancePropertiesSilent($module, $block_delta, $theme, $block_properties);
+    $block_new = self::load($module, $block_delta, $theme);
+    $diff = self::diff($block_original, $block_new);
+    $vars = array(
+      '@module' => $module,
+      '@delta' => $block_delta,
+      '@theme' => $theme,
+      '!diff' => $diff,
+    );
+
+    $message = 'The block @module:@delta in theme:$theme updated !diff';
+    return Message::make($message, $vars, WATCHDOG_INFO, 1);
+  }
+
+  /**
+   * Updates a block with any specified properties.
+   *
+   * @param string $module
+   *   The machine name of the module that created the block.
+   *   Use 'block' if was one created in the block UI.
+   * @param string $block_delta
+   *   the block delta (machine name of the block)
+   * @param string $theme
+   *   The name of the theme to target.  Defaults to default theme.
+   * @param array $block_properties
+   *   An array keyed with one or more of the following elements.
+   *   status: bool
+   *   weight: pos or neg numbers
+   *   region: the name or number of the region.
+   *   visibility:
+   *   pages: list of page URL(s) to place the block on.
+   *   title: the administrative title of the block.
+   *   cache:
    */
   private static function updateInstancePropertiesSilent($module, $block_delta, $theme, $block_properties) {
     // Prepare any params.
