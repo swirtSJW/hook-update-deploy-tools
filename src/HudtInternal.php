@@ -223,6 +223,17 @@ class HudtInternal {
 
 
   /**
+   * Remove empty string elements from supplied array.
+   *
+   * @param array $array_to_clean
+   *   An array of values.
+   */
+  public static function removeEmptyArrayElements(&$array_to_clean) {
+    $array_to_clean = array_diff($array_to_clean, array(''));
+  }
+
+
+  /**
    * Normalizes a machine  or file name to be the filename.
    *
    * @param string $quasi_name

@@ -121,6 +121,8 @@ class Redirects implements ImportInterface {
     // Each element should be old-location(source), new-location(redirect).
     // source urls can have ? but no #.  redirect urls can have both ? and #.
     $redirects = explode("\n", $redirect_list);
+    // Remove empty lines.
+    HudtInternal::removeEmptyArrayElements($redirects);
     // Count the number of lines in the import list.
     $line_count = count($redirects);
     $output['summary'] = t('@line_count redirects to be processed.', array('@line_count' => $line_count));
