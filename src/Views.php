@@ -62,16 +62,16 @@ class Views {
           // Check if view was deleted.
           if (views_get_view($view_name, TRUE)) {
             // View still exists.
-            throw new HudtException('View @viewname Still Exists After Deleted', array('@viewname' => $view_name), WATCHDOG_ERROR, TRUE);
+            throw new HudtException('View @viewname still exists after being deleted.  Possibly in code?', array('@viewname' => $view_name), WATCHDOG_ERROR, TRUE);
           }
           else {
             // View successfully deleted.
-            $message .= Message::make('View @viewname Successfully Deleted', array('@viewname' => $view_name), WATCHDOG_INFO);
+            $message .= Message::make('View @viewname successfully deleted', array('@viewname' => $view_name), WATCHDOG_INFO);
           }
         }
         else {
           // Output already deleted or not found message.
-          $message .= Message::make('View @viewname already deleted or could not be found.', array('@viewname' => $view_name), WATCHDOG_ERROR);
+          $message .= Message::make('View @viewname already deleted or could not be found.', array('@viewname' => $view_name), WATCHDOG_INFO);
         }
       }
     }
