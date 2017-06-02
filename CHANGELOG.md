@@ -1,6 +1,8 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+* Issue #2883507 by kducharm: Method to delete a View
+  https://www.drupal.org/node/2883507
 * Issue #2730457 by JayDarnell: Empty lines in redirect import should be ignored.
   https://www.drupal.org/node/2730457
 

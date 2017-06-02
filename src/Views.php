@@ -39,6 +39,45 @@ class Views {
     return $message;
   }
 
+  /**
+   * Delete requested Views.
+   *
+   * @param mixed $views_names
+   *   string - a single machine name of a View to delete.
+   *   array - an array of View machine names to delete.
+   *
+   * @return string
+   *   Message returned to display.
+   * @throws HudtException
+   */
+  public static function delete($views_names = array()) {
+    $message = '';
+    $views_names = (array) $views_names;
+
+    if (count($views_names)) {
+      foreach ($views_names as $view_name) {
+        if ($view = views_get_view($view_name)) {
+          views_delete_view($view);
+
+          // Check if view was deleted.
+          if (views_get_view($view_name, TRUE)) {
+            // View still exists.
+            throw new HudtException('View @viewname Still Exists After Deleted', array('@viewname' => $view_name), WATCHDOG_ERROR, TRUE);
+          }
+          else {
+            // View successfully deleted.
+            $message .= Message::make('View @viewname Successfully Deleted', array('@viewname' => $view_name), WATCHDOG_INFO);
+          }
+        }
+        else {
+          // Output already deleted or not found message.
+          $message .= Message::make('View @viewname already deleted or could not be found.', array('@viewname' => $view_name), WATCHDOG_ERROR);
+        }
+      }
+    }
+
+    return $message;
+  }
 
   /**
    * Enable or disable requested Views.

@@ -83,6 +83,7 @@ releases programmatically through hook_update_N():
     * <a href="#setting-variable">Change Drupal Variables</a>
 * **Views**
     * <a href="#views-enable">Enable a View</a>
+    * <a href="#views-delete">Delete a View</a>
     * <a href="#views-disable">Disable a View</a>
 * **Vocabularies**
     * <a href="#vocabulary-add">Add Vocabulary</a>
@@ -873,6 +874,23 @@ to enable some Views.
 
 ```
 
+
+### <a name="views-delete"></a>Delete a View
+
+Add something like this to a hook_update_N in your custom deploy module.install
+to delete some Views.
+
+```php
+
+  $views = array(
+    'some_view_machine_name',
+    'another_view_machine_name'
+  );
+  $message =  HookUpdateDeployTools\Views::delete('$views');
+
+  return $message;
+
+```
 
 ### <a name="views-disable"></a>Disable a View
 
