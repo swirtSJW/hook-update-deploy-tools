@@ -473,11 +473,8 @@ Feature
 
 ### <a name="disable"></a>Disable a Module(s)
 
-CAUTION: This surgically disables module(s) without regard to any dependents.
-It may make your site unstable if not used wisely.
-In most cases you should make sure you disable dependent modules too, but this
-leaves the option of disabling a single module, doing something, then enabling
-it again without disabling dependents.
+This disables dependent modules by default.  Passing it an optional  second
+parameter of FALSE will cause it to not disable dependent modules (RISKY).
 
 ```php
   /**
@@ -500,6 +497,10 @@ it again without disabling dependents.
 Any time you want to un-install a module(s) add a hook_update_N() to the .install
 of your custom deployment module.
 
+This disables and uninstalls dependent modules by default.  Passing it an
+optional second parameter of FALSE will cause it to not touch dependent modules.
+(RISKY)
+
 ```php
   /**
    * Disabling modules:
@@ -520,6 +521,9 @@ of your custom deployment module.
 
 Any time you want to enable a module(s) add a hook_update_N() to the .install
   of your custom deployment module.
+
+This enables dependent modules by default.  Passing it an optional second
+parameter of FALSE will cause it to not enable dependent modules (RISKY).
 
 ```php
   /**
@@ -543,6 +547,10 @@ Any time you want to enable a module(s) add a hook_update_N() to the .install
 
 Any time you want to uninstall a module(s) add a hook_update_N() to the .install
 of your custom deployment module.
+
+This uninstalls dependent modules by default.  Passing it an
+optional second parameter of FALSE will cause it to not touch dependent modules.
+(RISKY)
 
 ```php
   /**

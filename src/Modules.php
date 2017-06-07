@@ -78,6 +78,8 @@ class Modules {
    *
    * @param array $modules
    *   An array of module machine names to check for being enabled.
+   * @param bool $enable_dependencies
+   *   Switch for causing dependent modules to be enabled. (default: TRUE)
    *
    * @return string
    *   Messsage indicating the modules are enabled.
@@ -85,9 +87,9 @@ class Modules {
    * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function enable($modules = array()) {
+  public static function enable($modules = array(), $enable_dependencies = TRUE) {
     $modules = (array) $modules;
-    $enable_good = module_enable($modules);
+    $enable_good = module_enable($modules, $enable_dependencies);
     if (!$enable_good) {
       // Enable command failed.
       $module_list = implode(', ', $modules);
@@ -108,13 +110,14 @@ class Modules {
    *
    * @param array $modules
    *   An array of module machine names to disable.
+   * @param bool $disable_dependents
+   *   Switch to disable dependent modules. (default: TRUE)
    *
    * @return string
    *   Messsage indicating the modules are disabled.
    */
-  public static function disable($modules = array()) {
+  public static function disable($modules = array(), $disable_dependents = TRUE) {
     $modules = (array) $modules;
-    $disable_dependents = FALSE;
     module_disable($modules, $disable_dependents);
     // Verify that the modules were disabled.
     $success = self::checkDisabled($modules);
@@ -128,6 +131,8 @@ class Modules {
    *
    * @param array $modules
    *   An array of module machine names to uninstall that are already disabled.
+   * @param bool $uninstall_dependents
+   *   Switch to uninstall dependent modules. (default: TRUE)
    *
    * @return string
    *   Messsage indicating the modules are uninstalled.
@@ -135,7 +140,7 @@ class Modules {
    * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function uninstall($modules = array()) {
+  public static function uninstall($modules = array(), $uninstall_dependents = TRUE) {
     $modules = (array) $modules;
     $t = get_t();
     module_disable($modules);
@@ -173,14 +178,16 @@ class Modules {
    *
    * @param array $modules
    *   An array of module machine names to disable and uninstall.
+   * @param bool $include_dependents
+   *   Switch to disable and uninstall dependent modules. (default: TRUE)
    *
    * @return string
    *   Messsage indicating the modules are disabled and uninstalled.
    */
-  public static function disableAndUninstall($modules = array()) {
+  public static function disableAndUninstall($modules = array(), $include_dependents = TRUE) {
     $modules = (array) $modules;
-    $message = self::disable($modules);
-    $message .= self::uninstall($modules);
+    $message = self::disable($modules, $include_dependents);
+    $message .= self::uninstall($modules, $include_dependents);
 
     return $message;
   }
