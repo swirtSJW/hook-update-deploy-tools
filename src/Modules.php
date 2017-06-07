@@ -121,6 +121,9 @@ class Modules {
     module_disable($modules, $disable_dependents);
     // Verify that the modules were disabled.
     $success = self::checkDisabled($modules);
+    drupal_flush_all_caches();
+    $success .= "\n";
+    $success .= t("Caches cleared and Registry Rebuilt.");
 
     return $success;
   }
