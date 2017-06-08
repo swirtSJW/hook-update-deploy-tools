@@ -1,6 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+
+hook_update_deploy_tools 7.x-1.30 June 07, 2017
+-----------------------------------------------
 * Issue #2884507: Modules: disableAndUninstall sometimes fails. Added cache clear.
   https://www.drupal.org/node/2884507
 * Issue #2884498: Modules: Make disable and uninstall methods include dependents by default
