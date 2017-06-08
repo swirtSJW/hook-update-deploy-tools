@@ -122,8 +122,7 @@ class Modules {
     // Verify that the modules were disabled.
     $success = self::checkDisabled($modules);
     drupal_flush_all_caches();
-    $success .= "\n";
-    $success .= t("Caches cleared and Registry Rebuilt.");
+    $success .= Message::make("Caches cleared and Registry Rebuilt.", array(), WATCHDOG_INFO);
 
     return $success;
   }
