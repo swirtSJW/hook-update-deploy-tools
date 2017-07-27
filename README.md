@@ -230,7 +230,7 @@ This method does require the pathauto module.
 Add this to a hook_update_N in your custom deploy module.install.
 
 ```php
-  $message = HookUpdateDeployTools\Nodes::modifyAlias($old_alias, $new_alias, $language);
+  $message = HookUpdateDeployTools\Paths::modifyAlias($old_alias, $new_alias, $language);
   return $message;
 
 ```
