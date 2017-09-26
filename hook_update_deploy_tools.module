@@ -13,16 +13,17 @@ require_once drupal_get_path('module', 'hook_update_deploy_tools') . '/vendor/au
 function hook_update_deploy_tools_help($path, $arg) {
   switch ($path) {
     case 'admin/help#hook_update_deploy_tools':
-      $output = file_get_contents(drupal_get_path('module', 'hook_update_deploy_tools') . '/README.md');
-      if (module_exists('markdown')) {
+      $content = file_get_contents(drupal_get_path('module', 'hook_update_deploy_tools') . '/README.md');
+      if (module_exists('markdown') && module_load_include('module', 'markdown', 'markdown') && function_exists('_filter_markdown')) {
         // Markdown can be used.
-        module_load_include('php', 'markdown', 'markdown');
-        $output = Markdown($output);
+        module_load_include('module', 'markdown', 'markdown');
+        $output = filter_xss_admin(_filter_markdown($content, 'markdown'));
       }
-      else {
+      if (empty($output)) {
         // Markdown is not available.
-        $output = '<pre>' . $output . '</pre>';
+        $output = '<pre>' . check_plain($content) . '</pre>';
       }
+
       return $output;
   }
 }
