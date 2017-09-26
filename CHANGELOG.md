@@ -1,6 +1,8 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+* Issue #2909365: Blocks Variable typo in return message.
+  https://www.drupal.org/node/2909365
 * Issue #2897703: Documentation fix modifyAlias.
 
 hook_update_deploy_tools 7.x-1.30 June 07, 2017

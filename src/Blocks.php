@@ -259,7 +259,7 @@ class Blocks {
       '!diff' => $diff,
     );
 
-    $message = 'The block @module:@delta in theme:$theme updated !diff';
+    $message = 'The block @module:@delta in theme:@theme updated !diff';
     return Message::make($message, $vars, WATCHDOG_INFO, 1);
   }
 
