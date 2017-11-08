@@ -2,6 +2,11 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
+hook_update_deploy_tools 7.x-1.32 November 08, 2017
+-----------------------------------------------
+
+* Issue #2921671: Module::enable gives misleading feedback if dependency not met
+  https://www.drupal.org/node/2921671
 
 hook_update_deploy_tools 7.x-1.31 October 24, 2017
 -----------------------------------------------
