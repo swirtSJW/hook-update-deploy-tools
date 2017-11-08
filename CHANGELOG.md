@@ -2,9 +2,10 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
-hook_update_deploy_tools 7.x-1.32 November 08, 2017
+hook_update_deploy_tools 7.x-1.32 Nov 08, 2017
 -----------------------------------------------
-
+* Issue #2921927: Message::make falsely indicates the update failed in the event
+  of an error. https://www.drupal.org/node/2921927
 * Issue #2921671: Module::enable gives misleading feedback if dependency not met
   https://www.drupal.org/node/2921671
 

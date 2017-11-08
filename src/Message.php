@@ -70,25 +70,24 @@ class Message {
     $wd_type = (!empty($wd_type_giberish[$wd_type])) ? $wd_type_giberish[$wd_type] : $wd_type;
     // t() might not be available at .install.
     $t = get_t();
-    $fail_header = (($severity <= WATCHDOG_ERROR) && $severity !== FALSE) ? $t('UPDATE FAILED:') . ' ' : '';
     $formatted_message = format_string($message, $variables);
 
     if ($severity !== FALSE) {
-      watchdog($wd_type, $fail_header . $message, $variables, $severity, $link);
+      watchdog($wd_type, $message, $variables, $severity, $link);
     }
     // Check to see if this is run by drush and no WD error was
     // already sent.  WATCHDOG_ERROR and up get sent to terminal by WD.
     if (drupal_is_cli() && (($severity > WATCHDOG_WARNING) || $severity === FALSE)) {
       // Being run through drush, so output feedback to drush, and not already
       // output to terminal so output it.
-      drush_print("{$fail_header}{$wd_type}: {$formatted_message}", $indent);
+      drush_print("{$wd_type}: {$formatted_message}", $indent);
     }
     else {
       // Being run by update.php so translate and return.
       $return_message = $t($message, $variables) . " \n";
     }
 
-    return (!empty($return_message)) ? "{$fail_header}{$wd_type}: {$return_message}" : '';
+    return (!empty($return_message)) ? "{$wd_type}: {$return_message}" : '';
   }
 
 
