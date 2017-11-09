@@ -23,7 +23,8 @@ class Modules {
     $enabled_modules = array();
     $t = get_t();
     $enabled = $t('enabled');
-    $not_enabled = $t('not-enabled');
+    $not_enabled = $t('disabled');
+
     $report = array();
     // Check to see if each module is disabled.
     foreach ($modules as $module) {
@@ -41,10 +42,11 @@ class Modules {
       $variables = array('!report' => $report);
       throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
     }
-
-    $message = "The requested modules were disabled. Report: !report";
-    $variables = array('!report' => $report);
-    return Message::make($message, $variables, WATCHDOG_INFO);
+    else {
+      $message = "The requested modules are disabled. Report: !report";
+      $variables = array('!report' => $report);
+      return Message::make($message, $variables, WATCHDOG_INFO);
+    }
   }
 
   /**
@@ -68,12 +70,19 @@ class Modules {
     // Check to see if each module is enabled.
     foreach ($modules as $module) {
       if (!module_exists($module)) {
-        // This module is not enabled, throw an exception.
+        // This module is not enabled.
         $report[$module] = $not_enabled;
       }
       else {
         $report[$module] = $enabled;
       }
+    }
+
+    if (in_array($not_enabled, $report)) {
+      // Something was not enabled. Fail the update.
+      $message = 'Some of the modules that were supposed to be enabled, are not showing as enabled. Please investigate the problem and re-run this update. Report: !report';
+      $variables = array('!report' => $report);
+      throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
     }
 
     if (in_array($not_enabled, $report)) {
@@ -236,7 +245,8 @@ class Modules {
         $message = 'Modules::disable failed because: !error';
         Message::make($message, $vars, WATCHDOG_ERROR);
       }
-      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
+
+      throw new HudtException('Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
     }
   }
 
@@ -264,18 +274,35 @@ class Modules {
       $not_uninstalled = $t('not-uninstalled');
       $enabled = $t('enabled');
       $report = array();
+
+      // Scan to see if any of the modules are still enabled.
       foreach ($modules as $module) {
         if (module_exists($module)) {
           // The module is not disabled, so it can not be uninstalled.
           $report[$module] = $enabled;
         }
-        else {
-          // Made it this far. Safe to uninstall this module.
-          $success = drupal_uninstall_modules(array($module), $uninstall_dependents);
-          if ($success) {
+
+      }
+      if (empty($report)) {
+        // Made it this  far so it is safe to uninstall requested modules.
+        drupal_uninstall_modules($modules, $uninstall_dependents);
+
+        include_once DRUPAL_ROOT . '/includes/install.inc';
+        $module_stati = drupal_get_installed_schema_version('', TRUE, TRUE);
+
+        // Verify they were uninstalled.
+        foreach ($modules as $module) {
+          if (!isset($module_stati[$module])) {
+            // The module was not found, which is acceptable as it is
+            // without question, uninstalled.
+            $report[$module] = t('not found');
+          }
+          elseif ($module_stati[$module] === '-1') {
+            // It is not installed.
             $report[$module] = $uninstalled;
           }
           else {
+            // The module is installed.
             $report[$module] = $not_uninstalled;
           }
         }
@@ -285,7 +312,7 @@ class Modules {
       if (in_array($enabled, $report) || in_array($not_uninstalled, $report)) {
         // Uninstalling the modules failed, can not be more specifc about why.
         $message = "The modules requested to uninstall were NOT uninstalled successfully.  Report: !report";
-        throw new HudtException($message, $variables, WATCHDOG_ERROR, FALSE);
+        throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
       }
       else {
         $message = "The requested modules were uninstalled successfully. Report: !report";
@@ -300,7 +327,8 @@ class Modules {
         $message = 'Modules::uninstall failed because: !error';
         Message::make($message, $vars, WATCHDOG_ERROR);
       }
-      throw new HudtException('Caught Exception: Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
+
+      throw new HudtException('Update aborted!  !error', $vars, WATCHDOG_ERROR, FALSE);
     }
   }
 
