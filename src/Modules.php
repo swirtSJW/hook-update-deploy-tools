@@ -174,7 +174,7 @@ class Modules {
       self::checkPresent($modules, $enable_dependencies);
       $report = array();
       foreach ($modules as $module) {
-        $enable_good = module_enable($module, $enable_dependencies);
+        $enable_good = module_enable(array($module), $enable_dependencies);
         if ($enable_good) {
           $report[$module] = $enabled;
         }
@@ -184,7 +184,7 @@ class Modules {
       }
       $variables = array('!report' => $report);
 
-      if (!in_array($failed, $report)) {
+      if (in_array($failed, $report)) {
         // Enable command failed.
         $message = 'The modules to be enabled by this update, were not. Please investigate the problem and re-run this update. Report: !report';
         throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);

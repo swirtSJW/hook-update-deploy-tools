@@ -2,6 +2,10 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
+hook_update_deploy_tools 7.x-1.33 Nov 09, 2017
+-----------------------------------------------
+* bugfix Modules::enable Incorrect passing of module name.
+
 hook_update_deploy_tools 7.x-1.32 Nov 08, 2017
 -----------------------------------------------
 * Issue #2921927: Message::make falsely indicates the update failed in the event
