@@ -2,6 +2,8 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
+hook_update_deploy_tools 7.x-1.35 Nov 20, 2017
+-----------------------------------------------
 * Issue #2924700: Modules Avoid repeated recursion by processing modules once.
 * Issue #2924940: Modules Restrict search for dependencies to non-enabled modules.
 * Issue #2924700: Modules Circular dependencies cause infinite recursion
