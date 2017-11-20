@@ -136,7 +136,8 @@ class Modules {
       }
       elseif ($check_dependencies === TRUE) {
         // Check for dependencies, recursively.
-        if (!empty($module_data[$module]->requires)) {
+        if (!empty($module_data[$module]->requires) && !module_exists($module)) {
+          // The module is not yet enabled and has known depedencies.
           $dependencies = array_keys($module_data[$module]->requires);
           // Remove circular dependencies.
           $dependencies = array_diff($dependencies, $modules);
