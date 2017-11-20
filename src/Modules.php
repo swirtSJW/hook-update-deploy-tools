@@ -138,6 +138,8 @@ class Modules {
         // Check for dependencies, recursively.
         if (!empty($module_data[$module]->requires)) {
           $dependencies = array_keys($module_data[$module]->requires);
+          // Remove circular dependencies.
+          $dependencies = array_diff($dependencies, $modules);
           $missing_dependencies = self::checkPresent($dependencies, $check_dependencies, $module_data, $failed_flag);
           // Only report it if there are missing dependencies.
           if (!empty($missing_dependencies)) {

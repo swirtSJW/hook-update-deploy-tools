@@ -2,6 +2,7 @@ hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
 
+* Issue #2924700: Modules Circular dependencies cause infinite recursion
 
 hook_update_deploy_tools 7.x-1.34 Nov 09, 2017
 -----------------------------------------------
