@@ -112,6 +112,9 @@ class Modules {
    * @param bool $failed_flag
    *   Only used internally!  A persistant flag (by reference) to indicate a
    *   required module is missing.
+   * @param array $modules_checked
+   *   a flat array of modules that have already been checked. Passed by
+   *   reference as a way to prevent repetition in the recursion.
    *
    * @return array
    *   A array of the report of any missing modules.
@@ -119,7 +122,7 @@ class Modules {
    * @throws \HudtException
    *   Calls the update a failure, preventing it from registering the update_N.
    */
-  public static function checkPresent($modules = array(), $check_dependencies = TRUE, $module_data = NULL, &$failed_flag = FALSE) {
+  public static function checkPresent($modules = array(), $check_dependencies = TRUE, $module_data = NULL, &$failed_flag = FALSE, &$modules_checked = array()) {
     $modules = (array) $modules;
     $report = array();
     // If $module_data is NULL, then this is the first_run.
@@ -128,26 +131,34 @@ class Modules {
     $module_data = (empty($module_data)) ? \system_rebuild_module_data() : $module_data;
     // Create an associative array with weights as values.
     foreach ($modules as $module) {
-      // Check for basic presence.
-      if (!isset($module_data[$module])) {
-        // This module is not found in the filesystem. Report it.
-        $report[$module] = t('missing');
-        $failed_flag = TRUE;
+      if (in_array($module, $modules_checked)) {
+        // This module has already been processed, proceed to the next one.
+        continue;
       }
-      elseif ($check_dependencies === TRUE) {
-        // Check for dependencies, recursively.
-        if (!empty($module_data[$module]->requires) && !module_exists($module)) {
-          // The module is not yet enabled and has known depedencies.
-          $dependencies = array_keys($module_data[$module]->requires);
-          // Remove circular dependencies.
-          $dependencies = array_diff($dependencies, $modules);
-          $missing_dependencies = self::checkPresent($dependencies, $check_dependencies, $module_data, $failed_flag);
-          // Only report it if there are missing dependencies.
-          if (!empty($missing_dependencies)) {
-            $report[$module]['dependency'] = $missing_dependencies;
+      else {
+        $modules_checked[] = $module;
+        // Check for basic presence.
+        if (!isset($module_data[$module])) {
+          // This module is not found in the filesystem. Report it.
+          $report[$module] = t('missing');
+          $failed_flag = TRUE;
+        }
+        elseif ($check_dependencies === TRUE) {
+          // Check for dependencies, recursively.
+          if (!empty($module_data[$module]->requires) && !module_exists($module)) {
+            // The module is not yet enabled and has known depedencies.
+            $dependencies = array_keys($module_data[$module]->requires);
+            // Remove any immediate circular dependencies.
+            $dependencies = array_diff($dependencies, $modules);
+            $missing_dependencies = self::checkPresent($dependencies, $check_dependencies, $module_data, $failed_flag, $modules_checked);
+            // Only report it if there are missing dependencies.
+            if (!empty($missing_dependencies)) {
+              $report[$module]['dependency'] = $missing_dependencies;
+            }
           }
         }
       }
+
     }
 
     if ($first_run && $failed_flag) {
