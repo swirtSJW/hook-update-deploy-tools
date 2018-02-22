@@ -48,6 +48,9 @@ releases programmatically through hook_update_N():
     * <a href="#block-disable">Disable Block</a>
     * <a href="#block-enable">Enable a Block to a region</a>
     * <a href="#block-update-instance">Update an instance of a Block</a>
+* **Contexts**
+    * <a href="#context-disable">Disable Contexts</a>
+    * <a href="#context-enable">Enable Contexts</a>
 * **Features**
     * <a href="#revert">Revert Features</a>
     * <a href="#revert-forced">Revert Features Forced</a>
@@ -291,6 +294,39 @@ Add this to a hook_update_N in your custom deploy module.install.
     'weight' => 23,
   );
   $message = HookUpdateDeployTools\Blocks:: updateInstanceProperties($module, $block_delta, $theme, $block_properties);
+  return $message;
+
+```
+
+-------------------------------------------
+
+## <a name="contexts"></a>Contexts
+
+
+### <a name="context-disable"></a>Disable Contexts
+
+To disable a block (move it to region 'none')
+Add this to a hook_update_N in your custom deploy module.install.
+
+```php
+  $contexts = array(
+    'CONTEXT_NAME',
+  );
+  $message = HookUpdateDeployTools\Contexts::disable($contexts);
+  return $message;
+
+```
+
+### <a name="context-enable"></a>Enable Contexts
+
+To enable a block instance (move it to a region)
+Add this to a hook_update_N in your custom deploy module.install.
+
+```php
+  $contexts = array(
+    'CONTEXT_NAME',
+  );
+  $message = HookUpdateDeployTools\Contexts::enable($contexts);
   return $message;
 
 ```
