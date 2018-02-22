@@ -85,12 +85,6 @@ class Modules {
       throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
     }
 
-    if (in_array($not_enabled, $report)) {
-      // Something was not enabled. Fail the update.
-      $message = 'Some of the modules that were supposed to be enabled, are not showing as enabled. Please investigate the problem and re-run this update. Report: !report';
-      $variables = array('!report' => $report);
-      throw new HudtException($message, $variables, WATCHDOG_ERROR, TRUE);
-    }
     $module_list = implode(', ', $modules);
 
     $message = "The requested modules were enabled successfully. Report: !report";
