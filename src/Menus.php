@@ -23,6 +23,19 @@ class Menus implements ImportInterface {
     try {
       self::canImport();
       $menu_feature_storage_uri = HudtInternal::getStoragePath('menu');
+
+      // Have to become user 1 so that lookups for the paths will not fail.
+      global $user;
+      $original_user = clone $user;
+      $temp_admin_user = user_load(1);
+      if (empty($temp_admin_user)) {
+        // User 1 does not really exist, so fake it.
+        $temp_admin_user = clone $user;
+        $temp_admin_user->uid = 1;
+      }
+      // Make the current user, the temp_admin.
+      $user = $temp_admin_user;
+
       foreach ($menus as $mid => $menu_machine_name) {
         $filename = "{$menu_machine_name}-export.txt";
         $menu_uri = "{$menu_feature_storage_uri}{$filename}";
@@ -76,8 +89,12 @@ class Menus implements ImportInterface {
         }
         menu_cache_clear($menu_machine_name);
       }
+      // Set the  current user, back to the original.
+      $user = $original_user;
     }
     catch (\Exception $e) {
+      // Set the  current user, back to the original.
+      $user = $original_user;
       $message = 'Menu import failed because: !error';
       $variables = array(
         '!error' => (method_exists($e, 'logMessage')) ? $e->logMessage() : $e->getMessage(),
@@ -112,6 +129,8 @@ class Menus implements ImportInterface {
   public static function canImport() {
     Check::canUse('menu_import');
     Check::canCall('menu_import_file');
+    Check::canCall('user_load');
+
     return TRUE;
   }
 
