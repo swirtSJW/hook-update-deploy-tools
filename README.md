@@ -305,7 +305,7 @@ Add this to a hook_update_N in your custom deploy module.install.
 
 ### <a name="context-disable"></a>Disable Contexts
 
-To disable a block (move it to region 'none')
+To disable a context
 Add this to a hook_update_N in your custom deploy module.install.
 
 ```php
@@ -319,7 +319,7 @@ Add this to a hook_update_N in your custom deploy module.install.
 
 ### <a name="context-enable"></a>Enable Contexts
 
-To enable a block instance (move it to a region)
+To enable a context
 Add this to a hook_update_N in your custom deploy module.install.
 
 ```php
