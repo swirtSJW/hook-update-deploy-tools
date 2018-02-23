@@ -1,6 +1,9 @@
 hook_update_deploy_tools 7.x-1.x **-**-****
 -----------------------------------------------
 * [New items go at the top of this list.]
+
+hook_update_deploy_tools 7.x-1.36 Feb 22, 2018
+-----------------------------------------------
 * Issue #2944556: Menu import must run as user 1.
 * Issue #2947049: Modules Remove duplicate reporting code.
 * Issue #2946745: Context Add ability to enable or disable contexts.
